@@ -59,7 +59,23 @@
                     @endforelse
                 </tbody>
             </table>
-            {{ $inventory->links() }}
+            @if ($inventory->hasPages())
+                <div class="pagination-info">
+                    <div>
+                        Showing <strong>{{ $inventory->firstItem() }}</strong> to
+                        <strong>{{ $inventory->lastItem() }}</strong> of <strong>{{ $inventory->total() }}</strong> results
+                    </div>
+                    <div>
+                        {{ $inventory->links('pagination::bootstrap-5') }}
+                    </div>
+                </div>
+            @else
+                <div class="pagination-info">
+                    <div>
+                        Showing <strong>{{ $inventory->count() }}</strong> result(s)
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
