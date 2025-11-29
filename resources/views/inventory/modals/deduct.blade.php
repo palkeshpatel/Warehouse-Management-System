@@ -41,8 +41,19 @@
                             </select>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">Available Stock</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="deductAvailableStock" readonly style="background-color: #f8f9fa; font-weight: bold;">
+                                <span class="input-group-text bg-success text-white">
+                                    <i class="bi bi-box-seam me-1"></i>Available
+                                </span>
+                            </div>
+                            <small class="text-muted">Stock available for deduction</small>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                            <input type="number" name="qty" class="form-control" min="1" required>
+                            <input type="number" name="qty" class="form-control" id="deductQty" min="1" max="0" required disabled>
+                            <small class="form-text" id="deductQtyHelp">Please select a model first</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Invoice <span class="text-danger">*</span></label>
@@ -65,130 +76,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    $(document).ready(function() {
-        // Category change - load subcategories
-        $('#deductCategory').on('change', function() {
-            const categoryId = $(this).val();
-            const subcategorySelect = $('#deductSubcategory');
-            const modelSelect = $('#deductModel');
-
-            subcategorySelect.html('<option value="">Loading...</option>').prop('disabled', true);
-            modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
-
-            if (categoryId) {
-                $.ajax({
-                    url: '/inventory/subcategories/' + categoryId,
-                    method: 'GET',
-                    success: function(response) {
-                        subcategorySelect.html(
-                            '<option value="">Select Subcategory</option>');
-                        const subcategories = response.subcategories || response;
-                        if (Array.isArray(subcategories) && subcategories.length > 0) {
-                            subcategories.forEach(function(sub) {
-                                subcategorySelect.append(
-                                    `<option value="${sub.id}">${sub.name}</option>`
-                                    );
-                            });
-                            subcategorySelect.prop('disabled', false);
-                        } else {
-                            subcategorySelect.html(
-                                '<option value="">No subcategories found</option>');
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error loading subcategories:', xhr);
-                        subcategorySelect.html(
-                            '<option value="">Error loading subcategories</option>');
-                    }
-                });
-            } else {
-                subcategorySelect.html('<option value="">Select Subcategory</option>').prop('disabled',
-                    true);
-            }
-        });
-
-        // Subcategory change - load models
-        $('#deductSubcategory').on('change', function() {
-            const subcategoryId = $(this).val();
-            const modelSelect = $('#deductModel');
-
-            modelSelect.html('<option value="">Loading...</option>').prop('disabled', true);
-
-            if (subcategoryId) {
-                $.ajax({
-                    url: '/inventory/models/' + subcategoryId,
-                    method: 'GET',
-                    success: function(response) {
-                        modelSelect.html('<option value="">Select Model</option>');
-                        const models = response.models || response;
-                        if (Array.isArray(models) && models.length > 0) {
-                            models.forEach(function(model) {
-                                modelSelect.append(
-                                    `<option value="${model.id}">${model.model_name}</option>`
-                                    );
-                            });
-                            modelSelect.prop('disabled', false);
-                        } else {
-                            modelSelect.html('<option value="">No models found</option>');
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error loading models:', xhr);
-                        modelSelect.html('<option value="">Error loading models</option>');
-                    }
-                });
-            } else {
-                modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
-            }
-        });
-
-        // Form submission
-        $('#deductInventoryForm').on('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const submitBtn = $(this).find('button[type="submit"]');
-            const originalText = submitBtn.html();
-
-            submitBtn.prop('disabled', true).html(
-                '<span class="spinner-border spinner-border-sm me-2"></span>Deducting...');
-
-            $.ajax({
-                url: '/inventory/deduct',
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message ||
-                                'Inventory deducted successfully',
-                            confirmButtonColor: '#FF9900'
-                        }).then(() => {
-                            $('#deductModal').modal('hide');
-                            location.reload();
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    handleAjaxError(xhr);
-                },
-                complete: function() {
-                    submitBtn.prop('disabled', false).html(originalText);
-                }
-            });
-        });
-
-        // Reset form when modal is closed
-        $('#deductModal').on('hidden.bs.modal', function() {
-            $('#deductInventoryForm')[0].reset();
-            $('#deductSubcategory, #deductModel').html('<option value="">Select...</option>').prop(
-                'disabled', true);
-        });
-    });
-</script>

@@ -44,8 +44,11 @@
                             <td>{{ number_format($item->total_stock) }}</td>
                             <td>{{ number_format($item->available_stock) }}</td>
                             <td>
-                                <span class="badge bg-secondary" title="{{ $item->created_at->format('Y-m-d H:i:s') }}">
-                                    {{ $item->created_at->diffForHumans() }}
+                                @php
+                                    $addedAt = isset($item->last_added_at) ? $item->last_added_at : $item->created_at;
+                                @endphp
+                                <span class="badge bg-secondary" title="{{ $addedAt->format('Y-m-d H:i:s') }}">
+                                    {{ $addedAt->diffForHumans() }}
                                 </span>
                             </td>
                             @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
@@ -262,6 +265,298 @@
                 $('#addSubcategory').html('<option value="">Select Subcategory</option>').prop('disabled',
                     true);
                 $('#addModel').html('<option value="">Select Model</option>').prop('disabled', true);
+            });
+
+            // ========== DEDUCT INVENTORY MODAL ==========
+            // Bind events when modal is shown (after it's fully displayed)
+            $(document).on('shown.bs.modal', '#deductModal', function() {
+                console.log('Deduct Modal is now shown');
+
+                // Category change handler
+                $(document).off('change', '#deductCategory').on('change', '#deductCategory', function() {
+                    const categoryId = $(this).val();
+                    console.log('Category changed to:', categoryId);
+
+                    const subcategorySelect = $('#deductSubcategory');
+                    const modelSelect = $('#deductModel');
+
+                    subcategorySelect.html('<option value="">Loading...</option>').prop('disabled',
+                        true);
+                    modelSelect.html('<option value="">Select Model</option>').prop('disabled',
+                        true);
+
+                    if (categoryId) {
+                        $.ajax({
+                            url: '/inventory/subcategories/' + categoryId,
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function(response) {
+                                console.log('Subcategories received:', response);
+                                subcategorySelect.html(
+                                    '<option value="">Select Subcategory</option>');
+
+                                let subcategories = response.subcategories || response;
+
+                                if (Array.isArray(subcategories) && subcategories
+                                    .length > 0) {
+                                    subcategories.forEach(function(sub) {
+                                        subcategorySelect.append(
+                                            `<option value="${sub.id}">${sub.name}</option>`
+                                        );
+                                    });
+                                    subcategorySelect.prop('disabled', false);
+                                    console.log('Loaded ' + subcategories.length +
+                                        ' subcategories');
+                                } else {
+                                    subcategorySelect.html(
+                                        '<option value="">No subcategories found</option>'
+                                    );
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error loading subcategories:', error);
+                                console.error('Response:', xhr.responseText);
+                                subcategorySelect.html(
+                                    '<option value="">Error loading subcategories</option>'
+                                );
+                            }
+                        });
+                    } else {
+                        subcategorySelect.html('<option value="">Select Subcategory</option>').prop(
+                            'disabled', true);
+                    }
+                });
+
+                // Subcategory change handler
+                $(document).off('change', '#deductSubcategory').on('change', '#deductSubcategory',
+                    function() {
+                        const subcategoryId = $(this).val();
+                        console.log('Subcategory changed to:', subcategoryId);
+                        const modelSelect = $('#deductModel');
+
+                        modelSelect.html('<option value="">Loading...</option>').prop('disabled', true);
+                        $('#deductAvailableStock').val('').prop('disabled', true);
+                        $('#deductQty').val('').attr('max', 0).prop('disabled', true);
+                        $('#deductQtyHelp').text('Please select a model first').removeClass(
+                            'text-danger text-success');
+
+                        if (subcategoryId) {
+                            $.ajax({
+                                url: '/inventory/models/' + subcategoryId,
+                                method: 'GET',
+                                dataType: 'json',
+                                success: function(response) {
+                                    console.log('Models received:', response);
+                                    modelSelect.html(
+                                        '<option value="">Select Model</option>');
+
+                                    let models = response.models || response;
+
+                                    if (Array.isArray(models) && models.length > 0) {
+                                        models.forEach(function(model) {
+                                            modelSelect.append(
+                                                `<option value="${model.id}">${model.model_name}</option>`
+                                            );
+                                        });
+                                        modelSelect.prop('disabled', false);
+                                        console.log('Loaded ' + models.length + ' models');
+                                    } else {
+                                        modelSelect.html(
+                                            '<option value="">No models found</option>');
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('Error loading models:', error);
+                                    console.error('Response:', xhr.responseText);
+                                    modelSelect.html(
+                                        '<option value="">Error loading models</option>'
+                                    );
+                                }
+                            });
+                        } else {
+                            modelSelect.html('<option value="">Select Model</option>').prop('disabled',
+                                true);
+                        }
+                    });
+
+                // Model change handler - load available stock
+                $(document).off('change', '#deductModel').on('change', '#deductModel', function() {
+                    const modelId = $(this).val();
+                    const warehouseId = $('#deductWarehouse').length > 0 && $('#deductWarehouse')
+                        .val() ? $('#deductWarehouse').val() :
+                        '{{ auth()->user()->warehouse_id ?? '' }}';
+
+                    if (!modelId) {
+                        $('#deductAvailableStock').val('').prop('disabled', true);
+                        $('#deductQty').val('').attr('max', 0).prop('disabled', true);
+                        $('#deductQtyHelp').text('Please select a model first').removeClass(
+                            'text-danger text-success');
+                        return;
+                    }
+
+                    // For non-super admin, warehouse_id is already set, for super admin check if warehouse is selected
+                    if ($('#deductWarehouse').length > 0 && !warehouseId) {
+                        $('#deductAvailableStock').val('0').prop('disabled', false);
+                        $('#deductQty').val('').attr('max', 0).prop('disabled', true);
+                        $('#deductQtyHelp').text('Please select a warehouse first').addClass(
+                            'text-danger').removeClass('text-success');
+                        return;
+                    }
+
+                    // Fetch available stock
+                    $.ajax({
+                        url: '/inventory/available-stock',
+                        method: 'GET',
+                        dataType: 'json',
+                        data: {
+                            model_id: modelId,
+                            warehouse_id: warehouseId
+                        },
+                        success: function(response) {
+                            const availableStock = response.available_stock || 0;
+                            const totalStock = response.total_stock || 0;
+
+                            $('#deductAvailableStock').val(availableStock
+                                .toLocaleString()).prop('disabled', false);
+                            $('#deductQty').attr('max', availableStock);
+
+                            if (availableStock > 0) {
+                                $('#deductQty').prop('disabled', false);
+                                $('#deductQtyHelp').text(
+                                    `You can deduct up to ${availableStock.toLocaleString()} units`
+                                ).removeClass('text-danger').addClass(
+                                    'text-success');
+                            } else {
+                                $('#deductQty').prop('disabled', true);
+                                $('#deductQtyHelp').text(
+                                    'No stock available for this model in this warehouse'
+                                ).addClass('text-danger').removeClass(
+                                    'text-success');
+                            }
+
+                            console.log('Available stock:', availableStock);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error loading available stock:', error);
+                            $('#deductAvailableStock').val('0').prop('disabled', false);
+                            $('#deductQty').val('').attr('max', 0).prop('disabled',
+                                true);
+                            $('#deductQtyHelp').text('Error loading stock information')
+                                .addClass('text-danger').removeClass('text-success');
+                        }
+                    });
+                });
+
+                // Warehouse change handler (for Super Admin) - reload stock if model is selected
+                $(document).off('change', '#deductWarehouse').on('change', '#deductWarehouse', function() {
+                    const modelId = $('#deductModel').val();
+                    if (modelId) {
+                        $('#deductModel').trigger('change');
+                    }
+                });
+
+                // Quantity input validation
+                $(document).off('input change', '#deductQty').on('input change', '#deductQty', function() {
+                    const qty = parseInt($(this).val()) || 0;
+                    const maxQty = parseInt($(this).attr('max')) || 0;
+
+                    if (qty > maxQty && maxQty > 0) {
+                        $(this).val(maxQty);
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Quantity Exceeded',
+                            text: `Maximum available stock is ${maxQty.toLocaleString()} units`,
+                            confirmButtonColor: '#FF9900',
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    }
+                });
+            });
+
+            // Deduct form submission
+            $(document).on('submit', '#deductInventoryForm', function(e) {
+                e.preventDefault();
+
+                const qty = parseInt($('#deductQty').val()) || 0;
+                const maxQty = parseInt($('#deductQty').attr('max')) || 0;
+                const availableStock = parseInt($('#deductAvailableStock').val().replace(/,/g, '')) || 0;
+
+                // Final validation before submission
+                if (qty <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Quantity',
+                        text: 'Please enter a valid quantity',
+                        confirmButtonColor: '#FF9900'
+                    });
+                    return;
+                }
+
+                if (qty > maxQty || qty > availableStock) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Quantity Exceeded',
+                        text: `You cannot deduct more than ${availableStock.toLocaleString()} units. Available stock: ${availableStock.toLocaleString()}`,
+                        confirmButtonColor: '#FF9900'
+                    });
+                    return;
+                }
+
+                const formData = new FormData(this);
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+
+                submitBtn.prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Deducting...');
+
+                $.ajax({
+                    url: '/inventory/deduct',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message ||
+                                    'Inventory deducted successfully',
+                                confirmButtonColor: '#FF9900'
+                            }).then(() => {
+                                $('#deductModal').modal('hide');
+                                // Force reload to show updated stock values
+                                window.location.reload(true);
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        handleAjaxError(xhr);
+                    },
+                    complete: function() {
+                        submitBtn.prop('disabled', false).html(originalText);
+                    }
+                });
+            });
+
+            // Reset deduct form when modal is closed
+            $(document).on('hidden.bs.modal', '#deductModal', function() {
+                $('#deductInventoryForm')[0].reset();
+                $('#deductCategory').val('');
+                $('#deductSubcategory').html('<option value="">Select Subcategory</option>').prop(
+                    'disabled', true);
+                $('#deductModel').html('<option value="">Select Model</option>').prop('disabled', true);
+                $('#deductAvailableStock').val('').prop('disabled', true);
+                $('#deductQty').val('').attr('max', 0).prop('disabled', true);
+                $('#deductQtyHelp').text('Please select a model first').removeClass(
+                    'text-danger text-success');
+                @if (auth()->user()->isSuperAdmin())
+                    $('#deductWarehouse').val('');
+                @endif
             });
         });
     </script>

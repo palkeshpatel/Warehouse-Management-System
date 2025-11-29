@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InventoryStock extends Model
 {
@@ -30,5 +31,19 @@ class InventoryStock extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(InventoryTransaction::class, 'model_id', 'model_id')
+            ->where('warehouse_id', $this->warehouse_id);
+    }
+
+    public function latestAddTransaction()
+    {
+        return $this->hasOne(InventoryTransaction::class, 'model_id', 'model_id')
+            ->where('warehouse_id', $this->warehouse_id)
+            ->where('type', 'add')
+            ->latest('created_at');
     }
 }

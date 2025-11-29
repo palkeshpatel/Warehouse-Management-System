@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/inventory/deduct', [InventoryController::class, 'deduct'])->name('inventory.deduct');
     Route::get('/inventory/subcategories/{categoryId}', [InventoryController::class, 'getSubcategories']);
     Route::get('/inventory/models/{subcategoryId}', [InventoryController::class, 'getModels']);
+    Route::get('/inventory/available-stock', [InventoryController::class, 'getAvailableStock'])->name('inventory.available-stock');
 
     Route::middleware([IsSuperAdmin::class])->group(function () {
         Route::post('/inventory/transfer', [InventoryController::class, 'transfer'])->name('inventory.transfer');

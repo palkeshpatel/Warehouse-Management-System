@@ -8,6 +8,7 @@ use App\Models\InventoryTransaction;
 use App\Models\ProductModel;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class InventoryController extends Controller
@@ -32,6 +33,35 @@ class InventoryController extends Controller
         }
 
         $inventory = $query->orderBy('id', 'desc')->paginate(15);
+
+        // Get latest add transaction for each model+warehouse combination (optimized)
+        if ($inventory->count() > 0) {
+            $modelIds = $inventory->pluck('model_id')->unique()->toArray();
+            $warehouseIds = $inventory->pluck('warehouse_id')->unique()->toArray();
+
+            $latestTransactions = DB::table('inventory_transactions')
+                ->select('model_id', 'warehouse_id', DB::raw('MAX(created_at) as latest_added_at'))
+                ->where('type', 'add')
+                ->whereIn('model_id', $modelIds)
+                ->whereIn('warehouse_id', $warehouseIds)
+                ->groupBy('model_id', 'warehouse_id')
+                ->get()
+                ->keyBy(function ($item) {
+                    return $item->model_id . '_' . $item->warehouse_id;
+                });
+
+            // Attach latest transaction time to each stock item
+            $inventory->getCollection()->transform(function ($stock) use ($latestTransactions) {
+                $key = $stock->model_id . '_' . $stock->warehouse_id;
+                if (isset($latestTransactions[$key])) {
+                    $stock->last_added_at = \Carbon\Carbon::parse($latestTransactions[$key]->latest_added_at);
+                } else {
+                    $stock->last_added_at = $stock->created_at;
+                }
+                return $stock;
+            });
+        }
+
         $warehouses = $user->isSuperAdmin() ? Warehouse::where('status', 'active')->get() : collect();
         $categories = InventoryCategory::with(['subcategories' => function ($q) {
             $q->with('models');
@@ -119,6 +149,9 @@ class InventoryController extends Controller
 
         $stock->decrement('total_stock', $data['qty']);
         $stock->decrement('available_stock', $data['qty']);
+        
+        // Refresh the stock model to get updated values
+        $stock->refresh();
 
         InventoryTransaction::create([
             'model_id' => $data['model_id'],
@@ -197,6 +230,28 @@ class InventoryController extends Controller
         $models = ProductModel::where('subcategory_id', $subcategoryId)->get();
         return response()->json([
             'models' => $models
+        ]);
+    }
+
+    public function getAvailableStock(Request $request)
+    {
+        $user = auth()->user();
+        $modelId = $request->model_id;
+        $warehouseId = $user->isSuperAdmin() ? $request->warehouse_id : $user->warehouse_id;
+
+        if (!$modelId || !$warehouseId) {
+            return response()->json([
+                'available_stock' => 0
+            ]);
+        }
+
+        $stock = InventoryStock::where('model_id', $modelId)
+            ->where('warehouse_id', $warehouseId)
+            ->first();
+
+        return response()->json([
+            'available_stock' => $stock ? $stock->available_stock : 0,
+            'total_stock' => $stock ? $stock->total_stock : 0
         ]);
     }
 }
