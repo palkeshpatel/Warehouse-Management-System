@@ -26,14 +26,14 @@ class InventoryController extends Controller
         }
 
         if ($request->search) {
-            $query->whereHas('model', function($q) use ($request) {
+            $query->whereHas('model', function ($q) use ($request) {
                 $q->where('model_name', 'like', '%' . $request->search . '%');
             });
         }
 
         $inventory = $query->paginate(15);
         $warehouses = $user->isSuperAdmin() ? Warehouse::where('status', 'active')->get() : collect();
-        $categories = InventoryCategory::with(['subcategories' => function($q) {
+        $categories = InventoryCategory::with(['subcategories' => function ($q) {
             $q->with('models');
         }])->get();
 
@@ -43,7 +43,7 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
-        
+
         $data = $request->validate([
             'model_id' => 'required|exists:models,id',
             'warehouse_id' => $user->isSuperAdmin() ? 'required|exists:warehouses,id' : 'nullable',
@@ -58,10 +58,7 @@ class InventoryController extends Controller
 
         $invoicePath = null;
         if ($request->hasFile('invoice')) {
-            $invoicePath = null;
-        if ($request->hasFile('invoice')) {
             $invoicePath = $request->file('invoice')->store('invoices', 'public');
-        }
         }
 
         $stock = InventoryStock::firstOrCreate(
@@ -91,7 +88,7 @@ class InventoryController extends Controller
     public function deduct(Request $request)
     {
         $user = auth()->user();
-        
+
         $data = $request->validate([
             'model_id' => 'required|exists:models,id',
             'warehouse_id' => $user->isSuperAdmin() ? 'required|exists:warehouses,id' : 'nullable',
@@ -190,13 +187,16 @@ class InventoryController extends Controller
     public function getSubcategories($categoryId)
     {
         $subcategories = \App\Models\InventorySubcategory::where('category_id', $categoryId)->get();
-        return response()->json($subcategories);
+        return response()->json([
+            'subcategories' => $subcategories
+        ]);
     }
 
     public function getModels($subcategoryId)
     {
         $models = ProductModel::where('subcategory_id', $subcategoryId)->get();
-        return response()->json($models);
+        return response()->json([
+            'models' => $models
+        ]);
     }
 }
-

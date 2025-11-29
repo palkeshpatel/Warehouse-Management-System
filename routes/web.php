@@ -3,6 +3,9 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\Master\CategoryController;
+use App\Http\Controllers\Master\ModelController;
+use App\Http\Controllers\Master\SubcategoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -24,6 +27,13 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware([IsSuperAdmin::class])->group(function () {
         Route::resource('warehouses', WarehouseController::class);
         Route::resource('users', UserController::class);
+
+        // Masters Management
+        Route::prefix('masters')->name('masters.')->group(function () {
+            Route::resource('categories', CategoryController::class);
+            Route::resource('subcategories', SubcategoryController::class);
+            Route::resource('models', ModelController::class);
+        });
     });
 
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');

@@ -100,6 +100,20 @@ body {
     margin: 0;
 }
 
+.submenu {
+    transition: all 0.3s ease;
+}
+
+.submenu .nav-item {
+    padding-left: 2.5rem;
+    font-size: 0.9rem;
+}
+
+.submenu .nav-item i {
+    width: 16px;
+    font-size: 0.85rem;
+}
+
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;

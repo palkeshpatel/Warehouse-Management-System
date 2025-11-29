@@ -8,22 +8,22 @@
             <form id="addInventoryForm" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="row g-3">
-                        @if(auth()->user()->isSuperAdmin())
-                        <div class="col-md-6">
-                            <label class="form-label">Warehouse <span class="text-danger">*</span></label>
-                            <select name="warehouse_id" class="form-select" id="addWarehouse" required>
-                                <option value="">Select Warehouse</option>
-                                @foreach(\App\Models\Warehouse::where('status', 'active')->get() as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @if (auth()->user()->isSuperAdmin())
+                            <div class="col-md-6">
+                                <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                                <select name="warehouse_id" class="form-select" id="addWarehouse" required>
+                                    <option value="">Select Warehouse</option>
+                                    @foreach (\App\Models\Warehouse::where('status', 'active')->get() as $warehouse)
+                                        <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         @endif
                         <div class="col-md-6">
                             <label class="form-label">Category <span class="text-danger">*</span></label>
                             <select name="category_id" class="form-select" id="addCategory" required>
                                 <option value="">Select Category</option>
-                                @foreach($categories as $category)
+                                @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
                             </select>
@@ -67,113 +67,128 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // Category change - load subcategories
-    $('#addCategory').on('change', function() {
-        const categoryId = $(this).val();
-        const subcategorySelect = $('#addSubcategory');
-        const modelSelect = $('#addModel');
+    $(document).ready(function() {
+        // Category change - load subcategories
+        $('#addCategory').on('change', function() {
+            const categoryId = $(this).val();
+            const subcategorySelect = $('#addSubcategory');
+            const modelSelect = $('#addModel');
 
-        subcategorySelect.html('<option value="">Loading...</option>').prop('disabled', true);
-        modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
-
-        if (categoryId) {
-            $.ajax({
-                url: '/inventory/subcategories/' + categoryId,
-                method: 'GET',
-                success: function(response) {
-                    subcategorySelect.html('<option value="">Select Subcategory</option>');
-                    if (response.subcategories && response.subcategories.length > 0) {
-                        response.subcategories.forEach(function(sub) {
-                            subcategorySelect.append(`<option value="${sub.id}">${sub.name}</option>`);
-                        });
-                        subcategorySelect.prop('disabled', false);
-                    } else {
-                        subcategorySelect.html('<option value="">No subcategories found</option>');
-                    }
-                },
-                error: function() {
-                    subcategorySelect.html('<option value="">Error loading subcategories</option>');
-                }
-            });
-        } else {
-            subcategorySelect.html('<option value="">Select Subcategory</option>').prop('disabled', true);
-        }
-    });
-
-    // Subcategory change - load models
-    $('#addSubcategory').on('change', function() {
-        const subcategoryId = $(this).val();
-        const modelSelect = $('#addModel');
-
-        modelSelect.html('<option value="">Loading...</option>').prop('disabled', true);
-
-        if (subcategoryId) {
-            $.ajax({
-                url: '/inventory/models/' + subcategoryId,
-                method: 'GET',
-                success: function(response) {
-                    modelSelect.html('<option value="">Select Model</option>');
-                    if (response.models && response.models.length > 0) {
-                        response.models.forEach(function(model) {
-                            modelSelect.append(`<option value="${model.id}">${model.model_name}</option>`);
-                        });
-                        modelSelect.prop('disabled', false);
-                    } else {
-                        modelSelect.html('<option value="">No models found</option>');
-                    }
-                },
-                error: function() {
-                    modelSelect.html('<option value="">Error loading models</option>');
-                }
-            });
-        } else {
+            subcategorySelect.html('<option value="">Loading...</option>').prop('disabled', true);
             modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
-        }
-    });
 
-    // Form submission
-    $('#addInventoryForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.html();
-        
-        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
-
-        $.ajax({
-            url: '/inventory',
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message || 'Inventory added successfully',
-                        confirmButtonColor: '#FF9900'
-                    }).then(() => {
-                        $('#addModal').modal('hide');
-                        location.reload();
-                    });
-                }
-            },
-            error: function(xhr) {
-                handleAjaxError(xhr);
-            },
-            complete: function() {
-                submitBtn.prop('disabled', false).html(originalText);
+            if (categoryId) {
+                $.ajax({
+                    url: '/inventory/subcategories/' + categoryId,
+                    method: 'GET',
+                    success: function(response) {
+                        subcategorySelect.html(
+                            '<option value="">Select Subcategory</option>');
+                        const subcategories = response.subcategories || response;
+                        if (Array.isArray(subcategories) && subcategories.length > 0) {
+                            subcategories.forEach(function(sub) {
+                                subcategorySelect.append(
+                                    `<option value="${sub.id}">${sub.name}</option>`
+                                    );
+                            });
+                            subcategorySelect.prop('disabled', false);
+                        } else {
+                            subcategorySelect.html(
+                                '<option value="">No subcategories found</option>');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading subcategories:', xhr);
+                        subcategorySelect.html(
+                            '<option value="">Error loading subcategories</option>');
+                    }
+                });
+            } else {
+                subcategorySelect.html('<option value="">Select Subcategory</option>').prop('disabled',
+                    true);
             }
         });
-    });
 
-    // Reset form when modal is closed
-    $('#addModal').on('hidden.bs.modal', function() {
-        $('#addInventoryForm')[0].reset();
-        $('#addSubcategory, #addModel').html('<option value="">Select...</option>').prop('disabled', true);
+        // Subcategory change - load models
+        $('#addSubcategory').on('change', function() {
+            const subcategoryId = $(this).val();
+            const modelSelect = $('#addModel');
+
+            modelSelect.html('<option value="">Loading...</option>').prop('disabled', true);
+
+            if (subcategoryId) {
+                $.ajax({
+                    url: '/inventory/models/' + subcategoryId,
+                    method: 'GET',
+                    success: function(response) {
+                        modelSelect.html('<option value="">Select Model</option>');
+                        const models = response.models || response;
+                        if (Array.isArray(models) && models.length > 0) {
+                            models.forEach(function(model) {
+                                modelSelect.append(
+                                    `<option value="${model.id}">${model.model_name}</option>`
+                                    );
+                            });
+                            modelSelect.prop('disabled', false);
+                        } else {
+                            modelSelect.html('<option value="">No models found</option>');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading models:', xhr);
+                        modelSelect.html('<option value="">Error loading models</option>');
+                    }
+                });
+            } else {
+                modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
+            }
+        });
+
+        // Form submission
+        $('#addInventoryForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.html();
+
+            submitBtn.prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
+
+            $.ajax({
+                url: '/inventory',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message ||
+                                'Inventory added successfully',
+                            confirmButtonColor: '#FF9900'
+                        }).then(() => {
+                            $('#addModal').modal('hide');
+                            location.reload();
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    handleAjaxError(xhr);
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+
+        // Reset form when modal is closed
+        $('#addModal').on('hidden.bs.modal', function() {
+            $('#addInventoryForm')[0].reset();
+            $('#addSubcategory, #addModel').html('<option value="">Select...</option>').prop('disabled',
+                true);
+        });
     });
-});
 </script>

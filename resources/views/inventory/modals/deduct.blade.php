@@ -84,8 +84,9 @@
                     success: function(response) {
                         subcategorySelect.html(
                             '<option value="">Select Subcategory</option>');
-                        if (response.subcategories && response.subcategories.length > 0) {
-                            response.subcategories.forEach(function(sub) {
+                        const subcategories = response.subcategories || response;
+                        if (Array.isArray(subcategories) && subcategories.length > 0) {
+                            subcategories.forEach(function(sub) {
                                 subcategorySelect.append(
                                     `<option value="${sub.id}">${sub.name}</option>`
                                     );
@@ -96,7 +97,8 @@
                                 '<option value="">No subcategories found</option>');
                         }
                     },
-                    error: function() {
+                    error: function(xhr) {
+                        console.error('Error loading subcategories:', xhr);
                         subcategorySelect.html(
                             '<option value="">Error loading subcategories</option>');
                     }
@@ -120,8 +122,9 @@
                     method: 'GET',
                     success: function(response) {
                         modelSelect.html('<option value="">Select Model</option>');
-                        if (response.models && response.models.length > 0) {
-                            response.models.forEach(function(model) {
+                        const models = response.models || response;
+                        if (Array.isArray(models) && models.length > 0) {
+                            models.forEach(function(model) {
                                 modelSelect.append(
                                     `<option value="${model.id}">${model.model_name}</option>`
                                     );
@@ -131,7 +134,8 @@
                             modelSelect.html('<option value="">No models found</option>');
                         }
                     },
-                    error: function() {
+                    error: function(xhr) {
+                        console.error('Error loading models:', xhr);
                         modelSelect.html('<option value="">Error loading models</option>');
                     }
                 });
