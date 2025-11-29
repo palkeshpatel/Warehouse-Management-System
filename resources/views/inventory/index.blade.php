@@ -14,80 +14,75 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Inventory List</h5>
-        </div>
-        <div class="card-body">
-            <table class="table table-striped" id="inventoryTable">
-                <thead>
-                    <tr>
-                        <th>Model</th>
-                        <th>Category</th>
-                        <th>Subcategory</th>
-                        <th>Warehouse</th>
-                        <th>Total Stock</th>
-                        <th>Available</th>
-                        <th>Added</th>
-                        @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
-                            <th>Actions</th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($inventory as $item)
-                        <tr>
-                            <td>{{ $item->model->model_name ?? 'N/A' }}</td>
-                            <td>{{ $item->model->subcategory->category->name ?? 'N/A' }}</td>
-                            <td>{{ $item->model->subcategory->name ?? 'N/A' }}</td>
-                            <td>{{ $item->warehouse->name ?? 'N/A' }}</td>
-                            <td>{{ number_format($item->total_stock) }}</td>
-                            <td>{{ number_format($item->available_stock) }}</td>
-                            <td>
-                                @php
-                                    $addedAt = isset($item->last_added_at) ? $item->last_added_at : $item->created_at;
-                                @endphp
-                                <span class="badge bg-secondary" title="{{ $addedAt->format('Y-m-d H:i:s') }}">
-                                    {{ $addedAt->diffForHumans() }}
-                                </span>
-                            </td>
-                            @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
-                                <td>
-                                    <button class="btn btn-sm btn-primary">Edit</button>
-                                </td>
-                            @endif
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ auth()->user()->isSuperAdmin() || auth()->user()->isAdmin() ? '8' : '7' }}"
-                                class="text-center text-muted py-4">
-                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                No inventory found. Click "Add Inventory" to add items.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-            @if ($inventory->hasPages())
-                <div class="pagination-info">
-                    <div>
-                        Showing <strong>{{ $inventory->firstItem() }}</strong> to
-                        <strong>{{ $inventory->lastItem() }}</strong> of <strong>{{ $inventory->total() }}</strong>
-                        results
-                    </div>
-                    <div>
-                        {{ $inventory->links('pagination::bootstrap-5') }}
+    @if (isset($groupedInventory) && count($groupedInventory) > 0)
+        @foreach ($groupedInventory as $warehouseData)
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building me-2"></i>{{ $warehouseData['warehouse']->name }}
+                        <small class="ms-2">({{ $warehouseData['warehouse']->location }})</small>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        @foreach ($warehouseData['categories'] as $category)
+                            @foreach ($category['subcategories'] as $subcategory)
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="border rounded p-3 h-100">
+                                        <h6 class="text-info mb-3">
+                                            <i class="bi bi-folder2-open me-2"></i>{{ $subcategory['name'] }} -
+                                            {{ $category['name'] }}
+                                            <small class="text-muted">
+                                                (Available: {{ number_format($subcategory['available_stock']) }})
+                                            </small>
+                                        </h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Model</th>
+                                                        <th class="text-end">Available</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($subcategory['models'] ?? [] as $model)
+                                                        <tr>
+                                                            <td>
+                                                                <i class="bi bi-box-seam text-success me-2"></i>
+                                                                <small>{{ $model['name'] }}</small>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <span
+                                                                    class="badge bg-success">{{ number_format($model['available_stock']) }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                    @if (empty($subcategory['models'] ?? []))
+                                                        <tr>
+                                                            <td colspan="2" class="text-center text-muted">
+                                                                <small>No models found</small>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endforeach
                     </div>
                 </div>
-            @else
-                <div class="pagination-info">
-                    <div>
-                        Showing <strong>{{ $inventory->count() }}</strong> result(s)
-                    </div>
-                </div>
-            @endif
+            </div>
+        @endforeach
+    @else
+        <div class="card">
+            <div class="card-body text-center text-muted py-5">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>No inventory found. Click "Add Inventory" to add items.</p>
+            </div>
         </div>
-    </div>
+    @endif
 
     @include('inventory.modals.add')
     @include('inventory.modals.deduct')

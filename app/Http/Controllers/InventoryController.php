@@ -32,34 +32,159 @@ class InventoryController extends Controller
             });
         }
 
-        $inventory = $query->orderBy('id', 'desc')->paginate(15);
+        // Group inventory by Warehouse → Category → Subcategory with aggregated totals
+        $groupedInventory = [];
 
-        // Get latest add transaction for each model+warehouse combination (optimized)
-        if ($inventory->count() > 0) {
-            $modelIds = $inventory->pluck('model_id')->unique()->toArray();
-            $warehouseIds = $inventory->pluck('warehouse_id')->unique()->toArray();
+        if ($user->isSuperAdmin()) {
+            // Get all warehouses
+            $warehousesList = Warehouse::where('status', 'active')->get();
 
-            $latestTransactions = DB::table('inventory_transactions')
-                ->select('model_id', 'warehouse_id', DB::raw('MAX(created_at) as latest_added_at'))
-                ->where('type', 'add')
-                ->whereIn('model_id', $modelIds)
-                ->whereIn('warehouse_id', $warehouseIds)
-                ->groupBy('model_id', 'warehouse_id')
-                ->get()
-                ->keyBy(function ($item) {
-                    return $item->model_id . '_' . $item->warehouse_id;
-                });
+            // Get all inventory stocks
+            $allStocks = InventoryStock::with(['model.subcategory.category', 'warehouse'])->get();
 
-            // Attach latest transaction time to each stock item
-            $inventory->getCollection()->transform(function ($stock) use ($latestTransactions) {
-                $key = $stock->model_id . '_' . $stock->warehouse_id;
-                if (isset($latestTransactions[$key])) {
-                    $stock->last_added_at = \Carbon\Carbon::parse($latestTransactions[$key]->latest_added_at);
-                } else {
-                    $stock->last_added_at = $stock->created_at;
+            // Group by warehouse
+            foreach ($warehousesList as $warehouse) {
+                $warehouseStocks = $allStocks->where('warehouse_id', $warehouse->id);
+
+                if ($warehouseStocks->isEmpty()) {
+                    continue;
                 }
-                return $stock;
-            });
+
+                $categoryGroups = [];
+
+                // Group by category, then by subcategory
+                foreach ($warehouseStocks as $stock) {
+                    if (!$stock->model || !$stock->model->subcategory || !$stock->model->subcategory->category) {
+                        continue;
+                    }
+
+                    $category = $stock->model->subcategory->category;
+                    $subcategory = $stock->model->subcategory;
+
+                    $categoryId = $category->id;
+                    $subcategoryId = $subcategory->id;
+
+                    // Initialize category if not exists
+                    if (!isset($categoryGroups[$categoryId])) {
+                        $categoryGroups[$categoryId] = [
+                            'id' => $categoryId,
+                            'name' => $category->name,
+                            'subcategories' => []
+                        ];
+                    }
+
+                    // Initialize subcategory if not exists
+                    if (!isset($categoryGroups[$categoryId]['subcategories'][$subcategoryId])) {
+                        $categoryGroups[$categoryId]['subcategories'][$subcategoryId] = [
+                            'id' => $subcategoryId,
+                            'name' => $subcategory->name,
+                            'total_stock' => 0,
+                            'available_stock' => 0,
+                            'models' => []
+                        ];
+                    }
+
+                    // Get model info
+                    $model = $stock->model;
+                    $modelId = $model->id;
+
+                    // Initialize model if not exists
+                    if (!isset($categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId])) {
+                        $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId] = [
+                            'id' => $modelId,
+                            'name' => $model->model_name,
+                            'total_stock' => 0,
+                            'available_stock' => 0
+                        ];
+                    }
+
+                    // Aggregate stock totals for this model
+                    $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId]['total_stock'] += $stock->total_stock;
+                    $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId]['available_stock'] += $stock->available_stock;
+
+                    // Aggregate stock totals for this subcategory
+                    $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['total_stock'] += $stock->total_stock;
+                    $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['available_stock'] += $stock->available_stock;
+                }
+
+                if (!empty($categoryGroups)) {
+                    $groupedInventory[$warehouse->id] = [
+                        'warehouse' => $warehouse,
+                        'categories' => $categoryGroups
+                    ];
+                }
+            }
+        } else {
+            // For Admin/Employee: Show only their warehouse
+            $warehouse = $user->warehouse;
+            if ($warehouse) {
+                $warehouseStocks = InventoryStock::with(['model.subcategory.category', 'warehouse'])
+                    ->where('warehouse_id', $warehouse->id)
+                    ->get();
+
+                if ($warehouseStocks->isNotEmpty()) {
+                    $categoryGroups = [];
+
+                    foreach ($warehouseStocks as $stock) {
+                        if (!$stock->model || !$stock->model->subcategory || !$stock->model->subcategory->category) {
+                            continue;
+                        }
+
+                        $category = $stock->model->subcategory->category;
+                        $subcategory = $stock->model->subcategory;
+
+                        $categoryId = $category->id;
+                        $subcategoryId = $subcategory->id;
+
+                        if (!isset($categoryGroups[$categoryId])) {
+                            $categoryGroups[$categoryId] = [
+                                'id' => $categoryId,
+                                'name' => $category->name,
+                                'subcategories' => []
+                            ];
+                        }
+
+                        if (!isset($categoryGroups[$categoryId]['subcategories'][$subcategoryId])) {
+                            $categoryGroups[$categoryId]['subcategories'][$subcategoryId] = [
+                                'id' => $subcategoryId,
+                                'name' => $subcategory->name,
+                                'total_stock' => 0,
+                                'available_stock' => 0,
+                                'models' => []
+                            ];
+                        }
+
+                        // Get model info
+                        $model = $stock->model;
+                        $modelId = $model->id;
+
+                        // Initialize model if not exists
+                        if (!isset($categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId])) {
+                            $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId] = [
+                                'id' => $modelId,
+                                'name' => $model->model_name,
+                                'total_stock' => 0,
+                                'available_stock' => 0
+                            ];
+                        }
+
+                        // Aggregate stock totals for this model
+                        $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId]['total_stock'] += $stock->total_stock;
+                        $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['models'][$modelId]['available_stock'] += $stock->available_stock;
+
+                        // Aggregate stock totals for this subcategory
+                        $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['total_stock'] += $stock->total_stock;
+                        $categoryGroups[$categoryId]['subcategories'][$subcategoryId]['available_stock'] += $stock->available_stock;
+                    }
+
+                    if (!empty($categoryGroups)) {
+                        $groupedInventory[$warehouse->id] = [
+                            'warehouse' => $warehouse,
+                            'categories' => $categoryGroups
+                        ];
+                    }
+                }
+            }
         }
 
         $warehouses = $user->isSuperAdmin() ? Warehouse::where('status', 'active')->get() : collect();
@@ -67,7 +192,7 @@ class InventoryController extends Controller
             $q->with('models');
         }])->get();
 
-        return view('inventory.index', compact('inventory', 'warehouses', 'categories'));
+        return view('inventory.index', compact('groupedInventory', 'warehouses', 'categories'));
     }
 
     public function store(Request $request)
@@ -149,7 +274,7 @@ class InventoryController extends Controller
 
         $stock->decrement('total_stock', $data['qty']);
         $stock->decrement('available_stock', $data['qty']);
-        
+
         // Refresh the stock model to get updated values
         $stock->refresh();
 

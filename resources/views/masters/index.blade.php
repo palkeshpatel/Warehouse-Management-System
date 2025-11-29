@@ -1,12 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Masters')
+@section('title', 'Masters Management')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Masters Management</h2>
-            <p class="text-muted mb-0">Manage your Category → Subcategory → Model hierarchy</p>
         </div>
     </div>
 
