@@ -41,8 +41,8 @@
                             <td>{{ $item->model->subcategory->category->name ?? 'N/A' }}</td>
                             <td>{{ $item->model->subcategory->name ?? 'N/A' }}</td>
                             <td>{{ $item->warehouse->name ?? 'N/A' }}</td>
-                            <td>{{ $item->total_stock }}</td>
-                            <td>{{ $item->available_stock }}</td>
+                            <td>{{ number_format($item->total_stock) }}</td>
+                            <td>{{ number_format($item->available_stock) }}</td>
                             <td>
                                 <span class="badge bg-secondary" title="{{ $item->created_at->format('Y-m-d H:i:s') }}">
                                     {{ $item->created_at->diffForHumans() }}

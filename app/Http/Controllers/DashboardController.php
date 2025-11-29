@@ -28,6 +28,21 @@ class DashboardController extends Controller
     private function getSuperAdminData()
     {
         $today = now()->format('Y-m-d');
+        $warehouses = Warehouse::where('status', 'active')->get();
+        
+        // Get statistics for each warehouse
+        $warehousesWithStats = $warehouses->map(function ($warehouse) use ($today) {
+            $warehouse->total_inventory = InventoryStock::where('warehouse_id', $warehouse->id)->sum('total_stock');
+            $warehouse->today_added = InventoryTransaction::where('warehouse_id', $warehouse->id)
+                ->where('type', 'add')
+                ->whereDate('created_at', $today)
+                ->sum('qty');
+            $warehouse->today_deducted = InventoryTransaction::where('warehouse_id', $warehouse->id)
+                ->where('type', 'deduct')
+                ->whereDate('created_at', $today)
+                ->sum('qty');
+            return $warehouse;
+        });
 
         return [
             'totalInventory' => InventoryStock::sum('total_stock'),
@@ -39,7 +54,7 @@ class DashboardController extends Controller
             'todayDeducted' => InventoryTransaction::where('type', 'deduct')
                 ->whereDate('created_at', $today)
                 ->sum('qty'),
-            'warehouses' => Warehouse::where('status', 'active')->get(),
+            'warehouses' => $warehousesWithStats,
             'lowStockAlerts' => InventoryStock::where('available_stock', '<', 10)->with(['model', 'warehouse'])->get(),
         ];
     }

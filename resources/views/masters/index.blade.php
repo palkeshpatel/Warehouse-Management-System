@@ -17,7 +17,7 @@
                 <div class="category-header" onclick="toggleCategory({{ $category->id }})">
                     <div class="d-flex align-items-center justify-content-between w-100">
                         <div class="d-flex align-items-center flex-grow-1">
-                            <i class="bi bi-chevron-down me-3 category-chevron" id="cat-chevron-{{ $category->id }}"></i>
+                            <i class="bi bi-chevron-right me-3 category-chevron" id="cat-chevron-{{ $category->id }}"></i>
                             <i class="bi bi-folder-fill text-warning me-2" style="font-size: 1.5rem;"></i>
                             <div>
                                 <h5 class="mb-0 fw-bold">{{ $category->name }}</h5>
@@ -45,7 +45,7 @@
                 </div>
 
                 <!-- Subcategories Container -->
-                <div class="subcategories-container" id="category-{{ $category->id }}">
+                <div class="subcategories-container" id="category-{{ $category->id }}" style="display: none;">
                     @if ($category->subcategories->count() > 0)
                         <div class="subcategory-header-text ps-5 py-2">
                             <strong>Sub-Categories ({{ $category->subcategories->count() }}):</strong>
@@ -59,7 +59,7 @@
                                     onclick="toggleSubcategory({{ $category->id }}, {{ $subcategory->id }})">
                                     <div class="d-flex align-items-center justify-content-between w-100">
                                         <div class="d-flex align-items-center flex-grow-1">
-                                            <i class="bi bi-chevron-down me-3 subcategory-chevron"
+                                            <i class="bi bi-chevron-right me-3 subcategory-chevron"
                                                 id="sub-chevron-{{ $category->id }}-{{ $subcategory->id }}"></i>
                                             <i class="bi bi-folder2-open text-info me-2" style="font-size: 1.3rem;"></i>
                                             <div>
@@ -90,7 +90,7 @@
                                 </div>
 
                                 <!-- Models Container -->
-                                <div class="models-container" id="subcategory-{{ $category->id }}-{{ $subcategory->id }}">
+                                <div class="models-container" id="subcategory-{{ $category->id }}-{{ $subcategory->id }}" style="display: none;">
                                     @if ($subcategory->models && $subcategory->models->count() > 0)
                                         <div class="model-header-text ps-5 py-2">
                                             <strong>Items in {{ $subcategory->name }}:</strong>
@@ -312,9 +312,17 @@
             color: #6c757d;
         }
 
-        .category-chevron.collapsed,
-        .subcategory-chevron.collapsed {
-            transform: rotate(-90deg);
+        .bi-chevron-right {
+            transform: rotate(0deg);
+        }
+
+        .bi-chevron-down {
+            transform: rotate(0deg);
+        }
+
+        .bi-chevron-right.rotated,
+        .bi-chevron-down.rotated {
+            transform: rotate(90deg);
         }
 
         .category-actions,
@@ -454,10 +462,13 @@
 
             if (container.style.display === 'none' || !container.style.display) {
                 container.style.display = 'block';
-                chevron.classList.remove('collapsed');
+                chevron.classList.remove('bi-chevron-right');
+                chevron.classList.add('bi-chevron-down');
+                chevron.classList.add('rotated');
             } else {
                 container.style.display = 'none';
-                chevron.classList.add('collapsed');
+                chevron.classList.remove('bi-chevron-down', 'rotated');
+                chevron.classList.add('bi-chevron-right');
             }
         }
 
@@ -467,10 +478,13 @@
 
             if (container.style.display === 'none' || !container.style.display) {
                 container.style.display = 'block';
-                chevron.classList.remove('collapsed');
+                chevron.classList.remove('bi-chevron-right');
+                chevron.classList.add('bi-chevron-down');
+                chevron.classList.add('rotated');
             } else {
                 container.style.display = 'none';
-                chevron.classList.add('collapsed');
+                chevron.classList.remove('bi-chevron-down', 'rotated');
+                chevron.classList.add('bi-chevron-right');
             }
         }
 
