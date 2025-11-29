@@ -1,98 +1,147 @@
 <div class="modal fade" id="addModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Inventory</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Inventory</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="addInventoryForm">
+            <form id="addInventoryForm" enctype="multipart/form-data">
                 <div class="modal-body">
-                    @if(auth()->user()->isSuperAdmin())
-                        <div class="mb-3">
-                            <label class="form-label">Warehouse</label>
-                            <select name="warehouse_id" class="form-select" required>
+                    <div class="row g-3">
+                        @if(auth()->user()->isSuperAdmin())
+                        <div class="col-md-6">
+                            <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                            <select name="warehouse_id" class="form-select" id="addWarehouse" required>
                                 <option value="">Select Warehouse</option>
-                                @foreach($warehouses as $warehouse)
+                                @foreach(\App\Models\Warehouse::where('status', 'active')->get() as $warehouse)
                                     <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                    @endif
-                    <div class="mb-3">
-                        <label class="form-label">Category</label>
-                        <select name="category_id" id="categorySelect" class="form-select" required>
-                            <option value="">Select Category</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Subcategory</label>
-                        <select name="subcategory_id" id="subcategorySelect" class="form-select" required disabled>
-                            <option value="">Select Subcategory</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Model</label>
-                        <select name="model_id" id="modelSelect" class="form-select" required disabled>
-                            <option value="">Select Model</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Quantity</label>
-                        <input type="number" name="qty" class="form-control" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Invoice (Optional)</label>
-                        <input type="file" name="invoice" class="form-control" accept=".jpg,.jpeg,.pdf">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Remarks</label>
-                        <textarea name="remarks" class="form-control" rows="3"></textarea>
+                        @endif
+                        <div class="col-md-6">
+                            <label class="form-label">Category <span class="text-danger">*</span></label>
+                            <select name="category_id" class="form-select" id="addCategory" required>
+                                <option value="">Select Category</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Subcategory <span class="text-danger">*</span></label>
+                            <select name="subcategory_id" class="form-select" id="addSubcategory" required disabled>
+                                <option value="">Select Subcategory</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Model <span class="text-danger">*</span></label>
+                            <select name="model_id" class="form-select" id="addModel" required disabled>
+                                <option value="">Select Model</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                            <input type="number" name="qty" class="form-control" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Invoice (Optional)</label>
+                            <input type="file" name="invoice" class="form-control" accept=".jpg,.jpeg,.pdf">
+                            <small class="text-muted">Max size: 50MB (JPG, JPEG, PDF)</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea name="remarks" class="form-control" rows="3" placeholder="Enter remarks (optional)"></textarea>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Add Inventory</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>Add Inventory
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script>
 $(document).ready(function() {
-    $('#categorySelect').on('change', function() {
+    // Category change - load subcategories
+    $('#addCategory').on('change', function() {
         const categoryId = $(this).val();
+        const subcategorySelect = $('#addSubcategory');
+        const modelSelect = $('#addModel');
+
+        subcategorySelect.html('<option value="">Loading...</option>').prop('disabled', true);
+        modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
+
         if (categoryId) {
-            $.get('/inventory/subcategories/' + categoryId, function(data) {
-                $('#subcategorySelect').empty().append('<option value="">Select Subcategory</option>');
-                data.forEach(function(item) {
-                    $('#subcategorySelect').append('<option value="' + item.id + '">' + item.name + '</option>');
-                });
-                $('#subcategorySelect').prop('disabled', false);
+            $.ajax({
+                url: '/inventory/subcategories/' + categoryId,
+                method: 'GET',
+                success: function(response) {
+                    subcategorySelect.html('<option value="">Select Subcategory</option>');
+                    if (response.subcategories && response.subcategories.length > 0) {
+                        response.subcategories.forEach(function(sub) {
+                            subcategorySelect.append(`<option value="${sub.id}">${sub.name}</option>`);
+                        });
+                        subcategorySelect.prop('disabled', false);
+                    } else {
+                        subcategorySelect.html('<option value="">No subcategories found</option>');
+                    }
+                },
+                error: function() {
+                    subcategorySelect.html('<option value="">Error loading subcategories</option>');
+                }
             });
+        } else {
+            subcategorySelect.html('<option value="">Select Subcategory</option>').prop('disabled', true);
         }
     });
 
-    $('#subcategorySelect').on('change', function() {
+    // Subcategory change - load models
+    $('#addSubcategory').on('change', function() {
         const subcategoryId = $(this).val();
+        const modelSelect = $('#addModel');
+
+        modelSelect.html('<option value="">Loading...</option>').prop('disabled', true);
+
         if (subcategoryId) {
-            $.get('/inventory/models/' + subcategoryId, function(data) {
-                $('#modelSelect').empty().append('<option value="">Select Model</option>');
-                data.forEach(function(item) {
-                    $('#modelSelect').append('<option value="' + item.id + '">' + item.model_name + '</option>');
-                });
-                $('#modelSelect').prop('disabled', false);
+            $.ajax({
+                url: '/inventory/models/' + subcategoryId,
+                method: 'GET',
+                success: function(response) {
+                    modelSelect.html('<option value="">Select Model</option>');
+                    if (response.models && response.models.length > 0) {
+                        response.models.forEach(function(model) {
+                            modelSelect.append(`<option value="${model.id}">${model.model_name}</option>`);
+                        });
+                        modelSelect.prop('disabled', false);
+                    } else {
+                        modelSelect.html('<option value="">No models found</option>');
+                    }
+                },
+                error: function() {
+                    modelSelect.html('<option value="">Error loading models</option>');
+                }
             });
+        } else {
+            modelSelect.html('<option value="">Select Model</option>').prop('disabled', true);
         }
     });
 
+    // Form submission
     $('#addInventoryForm').on('submit', function(e) {
         e.preventDefault();
+        
         const formData = new FormData(this);
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
+
         $.ajax({
             url: '/inventory',
             method: 'POST',
@@ -101,15 +150,30 @@ $(document).ready(function() {
             contentType: false,
             success: function(response) {
                 if (response.success) {
-                    Swal.fire('Success', response.message, 'success');
-                    $('#addModal').modal('hide');
-                    location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message || 'Inventory added successfully',
+                        confirmButtonColor: '#FF9900'
+                    }).then(() => {
+                        $('#addModal').modal('hide');
+                        location.reload();
+                    });
                 }
             },
-            error: handleAjaxError
+            error: function(xhr) {
+                handleAjaxError(xhr);
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).html(originalText);
+            }
         });
+    });
+
+    // Reset form when modal is closed
+    $('#addModal').on('hidden.bs.modal', function() {
+        $('#addInventoryForm')[0].reset();
+        $('#addSubcategory, #addModel').html('<option value="">Select...</option>').prop('disabled', true);
     });
 });
 </script>
-@endpush
-
