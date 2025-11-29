@@ -38,5 +38,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware([IsAdminOrSuperAdmin::class])->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::post('/reports/filter', [ReportController::class, 'filterReports'])->name('reports.filter');
     });
 });

@@ -64,16 +64,56 @@ $(document).ready(function() {
     }, 5000);
 });
 
+// Loader Functions
+function showLoader() {
+    if ($('.loader-overlay').length === 0) {
+        $('body').append(`
+            <div class="loader-overlay">
+                <div class="loader-spinner"></div>
+            </div>
+        `);
+    }
+}
+
+function hideLoader() {
+    $('.loader-overlay').remove();
+}
+
+// Setup global AJAX loader
+$(document).ajaxStart(function() {
+    showLoader();
+}).ajaxStop(function() {
+    hideLoader();
+}).ajaxError(function(event, xhr, settings) {
+    hideLoader();
+});
+
 // Standard AJAX Error Handler
 function handleAjaxError(xhr) {
+    hideLoader();
     if (xhr.responseJSON && xhr.responseJSON.message) {
-        Swal.fire('Error', xhr.responseJSON.message, 'error');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: xhr.responseJSON.message,
+            confirmButtonColor: '#FF9900'
+        });
     } else {
-        Swal.fire('Error', 'Something went wrong', 'error');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong',
+            confirmButtonColor: '#FF9900'
+        });
     }
 }
 
 // Standard Success Handler
 function showSuccess(message) {
-    Swal.fire('Success', message, 'success');
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: message,
+        confirmButtonColor: '#FF9900'
+    });
 }
