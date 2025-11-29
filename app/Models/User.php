@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
+        'warehouse_id',
+        'theme_preference',
+        'status',
     ];
 
     /**
@@ -44,5 +48,30 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role_id === 1 && $this->warehouse_id === null;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role_id === 2 && $this->warehouse_id !== null;
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->role_id === 3 && $this->warehouse_id !== null;
     }
 }
