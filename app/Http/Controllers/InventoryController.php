@@ -31,7 +31,7 @@ class InventoryController extends Controller
             });
         }
 
-        $inventory = $query->paginate(15);
+        $inventory = $query->orderBy('id', 'desc')->paginate(15);
         $warehouses = $user->isSuperAdmin() ? Warehouse::where('status', 'active')->get() : collect();
         $categories = InventoryCategory::with(['subcategories' => function ($q) {
             $q->with('models');

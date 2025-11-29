@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\Master\CategoryController;
+use App\Http\Controllers\Master\MasterController;
 use App\Http\Controllers\Master\ModelController;
 use App\Http\Controllers\Master\SubcategoryController;
 use App\Http\Controllers\ReportController;
@@ -30,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Masters Management
         Route::prefix('masters')->name('masters.')->group(function () {
+            Route::get('/', [MasterController::class, 'index'])->name('index');
             Route::resource('categories', CategoryController::class);
             Route::resource('subcategories', SubcategoryController::class);
             Route::resource('models', ModelController::class);

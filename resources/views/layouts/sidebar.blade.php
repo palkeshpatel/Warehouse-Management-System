@@ -28,6 +28,12 @@
             </a>
             <div class="submenu" id="mastersSubmenu"
                 style="{{ request()->routeIs('masters.*') ? '' : 'display: none;' }} margin-left: 20px;">
+                <a href="{{ route('masters.index') }}"
+                    class="nav-item {{ request()->routeIs('masters.index') ? 'active' : '' }}" data-bs-toggle="tooltip"
+                    data-bs-placement="right" title="Tree View">
+                    <i class="bi bi-diagram-3"></i>
+                    <span class="nav-text">Tree View</span>
+                </a>
                 <a href="{{ route('masters.categories.index') }}"
                     class="nav-item {{ request()->routeIs('masters.categories.*') ? 'active' : '' }}"
                     data-bs-toggle="tooltip" data-bs-placement="right" title="Categories">
