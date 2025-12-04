@@ -187,7 +187,8 @@ class InventoryController extends Controller
             }
         }
 
-        $warehouses = $user->isSuperAdmin() ? Warehouse::where('status', 'active')->get() : collect();
+        // For transfer modal: Super Admin sees all warehouses, Admin/Employee see all warehouses for transfers
+        $warehouses = Warehouse::where('status', 'active')->get();
         $categories = InventoryCategory::with(['subcategories' => function ($q) {
             $q->with('models');
         }])->get();
@@ -296,6 +297,8 @@ class InventoryController extends Controller
 
     public function transfer(Request $request)
     {
+        $user = auth()->user();
+        
         $data = $request->validate([
             'model_id' => 'required|exists:models,id',
             'from_warehouse_id' => 'required|exists:warehouses,id',
@@ -303,6 +306,16 @@ class InventoryController extends Controller
             'qty' => 'required|integer|min:1',
             'remarks' => 'nullable|string',
         ]);
+
+        // For Admin/Employee, ensure they can only transfer FROM their warehouse
+        if (!$user->isSuperAdmin()) {
+            if ($data['from_warehouse_id'] != $user->warehouse_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You can only transfer stock from your assigned warehouse'
+                ], 403);
+            }
+        }
 
         $fromStock = InventoryStock::where('model_id', $data['model_id'])
             ->where('warehouse_id', $data['from_warehouse_id'])

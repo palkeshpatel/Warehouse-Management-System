@@ -45,12 +45,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/models/{subcategoryId}', [InventoryController::class, 'getModels']);
     Route::get('/inventory/available-stock', [InventoryController::class, 'getAvailableStock'])->name('inventory.available-stock');
 
-    Route::middleware([IsSuperAdmin::class])->group(function () {
+    // Stock Transfer: Super Admin and Admin can transfer
+    Route::middleware([IsAdminOrSuperAdmin::class])->group(function () {
         Route::post('/inventory/transfer', [InventoryController::class, 'transfer'])->name('inventory.transfer');
     });
 
-    Route::middleware([IsAdminOrSuperAdmin::class])->group(function () {
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-        Route::post('/reports/filter', [ReportController::class, 'filterReports'])->name('reports.filter');
-    });
+    // Reports accessible to all authenticated users (Super Admin, Admin, Employee)
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/filter', [ReportController::class, 'filterReports'])->name('reports.filter');
 });

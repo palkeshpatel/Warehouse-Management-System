@@ -100,7 +100,7 @@
         </div>
         @endif
 
-    @elseif(auth()->user()->isAdmin())
+    @elseif(auth()->user()->isAdmin() || auth()->user()->isEmployee())
         <div class="row mb-4">
             <div class="col-md-4">
                 <div class="card h-100">

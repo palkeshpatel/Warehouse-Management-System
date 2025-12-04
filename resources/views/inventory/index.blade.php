@@ -8,7 +8,7 @@
         <div class="d-flex gap-2">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">Add Inventory</button>
             <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deductModal">Deduct Inventory</button>
-            @if (auth()->user()->isSuperAdmin())
+            @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
                 <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#transferModal">Transfer Stock</button>
             @endif
         </div>
@@ -86,7 +86,7 @@
 
     @include('inventory.modals.add')
     @include('inventory.modals.deduct')
-    @if (auth()->user()->isSuperAdmin())
+    @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
         @include('inventory.modals.transfer')
     @endif
 @endsection

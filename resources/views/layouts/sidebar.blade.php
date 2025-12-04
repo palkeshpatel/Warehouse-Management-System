@@ -32,7 +32,7 @@
             <i class="bi bi-box-seam"></i>
             <span class="nav-text">Inventory</span>
         </a>
-        @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+        @if(!auth()->user()->isEmployee())
             <a href="{{ route('reports.index') }}"
                 class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}" data-bs-toggle="tooltip"
                 data-bs-placement="right" title="Reports">

@@ -9,19 +9,30 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">From Warehouse</label>
-                        <select name="from_warehouse_id" class="form-select" required>
+                        <select name="from_warehouse_id" class="form-select" id="transferFromWarehouse" required>
                             <option value="">Select Warehouse</option>
-                            @foreach ($warehouses as $warehouse)
-                                <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
-                            @endforeach
+                            @if(auth()->user()->isSuperAdmin())
+                                @foreach ($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @endforeach
+                            @else
+                                <option value="{{ auth()->user()->warehouse_id }}" selected>{{ auth()->user()->warehouse->name ?? 'Your Warehouse' }}</option>
+                            @endif
                         </select>
+                        @if(!auth()->user()->isSuperAdmin())
+                            <small class="text-muted">You can only transfer from your assigned warehouse</small>
+                        @endif
                     </div>
                     <div class="mb-3">
                         <label class="form-label">To Warehouse</label>
-                        <select name="to_warehouse_id" class="form-select" required>
+                        <select name="to_warehouse_id" class="form-select" id="transferToWarehouse" required>
                             <option value="">Select Warehouse</option>
                             @foreach ($warehouses as $warehouse)
-                                <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @if(!auth()->user()->isSuperAdmin() && $warehouse->id == auth()->user()->warehouse_id)
+                                    {{-- Skip own warehouse in "To Warehouse" for Admin/Employee --}}
+                                @else
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
@@ -142,20 +153,56 @@
                 }
             });
 
+            // Update "To Warehouse" dropdown when "From Warehouse" changes (for Super Admin)
+            @if(auth()->user()->isSuperAdmin())
+            $('#transferFromWarehouse').on('change', function() {
+                const fromWarehouseId = $(this).val();
+                const toWarehouseSelect = $('#transferToWarehouse');
+                const allWarehouses = @json($warehouses);
+                
+                toWarehouseSelect.html('<option value="">Select Warehouse</option>');
+                allWarehouses.forEach(function(warehouse) {
+                    if (warehouse.id != fromWarehouseId) {
+                        toWarehouseSelect.append(`<option value="${warehouse.id}">${warehouse.name}</option>`);
+                    }
+                });
+            });
+            @endif
+
             $('#transferForm').on('submit', function(e) {
                 e.preventDefault();
+                const formData = $(this).serialize();
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Transferring...');
+                
                 $.ajax({
                     url: '/inventory/transfer',
                     method: 'POST',
-                    data: $(this).serialize(),
+                    data: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire('Success', response.message, 'success');
-                            $('#transferModal').modal('hide');
-                            location.reload();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message || 'Stock transferred successfully',
+                                confirmButtonColor: '#FF9900'
+                            }).then(() => {
+                                $('#transferModal').modal('hide');
+                                location.reload();
+                            });
                         }
                     },
-                    error: handleAjaxError
+                    error: function(xhr) {
+                        handleAjaxError(xhr);
+                    },
+                    complete: function() {
+                        submitBtn.prop('disabled', false).html(originalText);
+                    }
                 });
             });
         });

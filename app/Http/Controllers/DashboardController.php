@@ -82,8 +82,23 @@ class DashboardController extends Controller
 
     private function getEmployeeData($warehouseId)
     {
+        // Employee dashboard same as Admin
+        $today = now()->format('Y-m-d');
+
         return [
-            'warehouseId' => $warehouseId,
+            'totalInventory' => InventoryStock::where('warehouse_id', $warehouseId)->sum('total_stock'),
+            'todayAdded' => InventoryTransaction::where('warehouse_id', $warehouseId)
+                ->where('type', 'add')
+                ->whereDate('created_at', $today)
+                ->sum('qty'),
+            'todayDeducted' => InventoryTransaction::where('warehouse_id', $warehouseId)
+                ->where('type', 'deduct')
+                ->whereDate('created_at', $today)
+                ->sum('qty'),
+            'lowStockAlerts' => InventoryStock::where('warehouse_id', $warehouseId)
+                ->where('available_stock', '<', 10)
+                ->with('model')
+                ->get(),
         ];
     }
 }

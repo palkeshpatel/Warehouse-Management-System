@@ -17,7 +17,8 @@ class ReportController extends Controller
 
         // Initial load - return view with default data (monthly)
         if (!$request->ajax()) {
-            $warehouseId = null;
+            // For Admin/Employee, use their warehouse_id; for Super Admin, allow selection
+            $warehouseId = $user->isSuperAdmin() ? null : $user->warehouse_id;
             $period = 'monthly';
             $dateRange = $this->getDateRange($period);
             $startDate = $dateRange[0]->format('Y-m-d');
