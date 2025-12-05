@@ -20,11 +20,6 @@ Route::get('/', function () {
 });
 
 Route::get('/clear', function () {
-    $token = env('CACHE_CLEAR_TOKEN', 'change-me-in-production');
-    if (request()->get('token') !== $token) {
-        return response()->json(['error' => 'Unauthorized'], 401);
-    }
-
     Artisan::call('config:clear');
     Artisan::call('cache:clear');
     Artisan::call('route:clear');
