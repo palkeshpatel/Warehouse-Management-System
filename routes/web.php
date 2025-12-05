@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\CacheController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\Master\CategoryController;
@@ -13,14 +12,30 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Middleware\IsAdminOrSuperAdmin;
 use App\Http\Middleware\IsSuperAdmin;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect('/login');
 });
 
-// Cache clear route - Access via: /clear?token=YOUR_TOKEN
-Route::get('/clear', [CacheController::class, 'clear'])->name('cache.clear');
+Route::get('/clear', function () {
+    $token = env('CACHE_CLEAR_TOKEN', 'change-me-in-production');
+    if (request()->get('token') !== $token) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('view:clear');
+    Artisan::call('optimize:clear');
+    Artisan::call('config:cache');
+    Artisan::call('route:cache');
+    Artisan::call('view:cache');
+    
+    return response()->json(['success' => true]);
+});
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
