@@ -33,7 +33,7 @@ Route::get('/clear', function () {
     Artisan::call('config:cache');
     Artisan::call('route:cache');
     Artisan::call('view:cache');
-    
+
     return response()->json(['success' => true]);
 });
 
