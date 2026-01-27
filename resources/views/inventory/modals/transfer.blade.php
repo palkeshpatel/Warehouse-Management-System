@@ -69,7 +69,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-info">Transfer</button>
+                    <button type="submit" class="btn btn-primary">Transfer</button>
                 </div>
             </form>
         </div>
