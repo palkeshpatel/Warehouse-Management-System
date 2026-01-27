@@ -7,7 +7,7 @@
             <div class="dropdown">
                 <button class="btn btn-link text-dark dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown"
                     style="color: var(--text-color) !important;">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=FF9900&color=fff"
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=601d57&color=fff"
                         class="rounded-circle me-2" width="32" height="32" alt="Profile">
                     <span>{{ auth()->user()->name }}</span>
                 </button>

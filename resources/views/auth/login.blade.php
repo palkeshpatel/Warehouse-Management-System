@@ -6,7 +6,7 @@
 <style>
     .login-container {
         min-height: 100vh;
-        background: linear-gradient(135deg, rgba(255, 153, 0, 0.9), rgba(240, 135, 0, 0.9)), url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600') center/cover no-repeat;
+        background: linear-gradient(135deg, rgba(96, 29, 87, 0.9), rgba(40, 37, 96, 0.9)), url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600') center/cover no-repeat;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -23,7 +23,7 @@
     }
     
     .login-card-header {
-        background: linear-gradient(135deg, #FF9900, #F08700);
+        background: linear-gradient(135deg, #601d57, #282560);
         color: white;
         padding: 30px;
         text-align: center;
@@ -51,16 +51,16 @@
     
     .form-control:focus {
         border-left: none;
-        box-shadow: 0 0 0 0.2rem rgba(255, 153, 0, 0.25);
+        box-shadow: 0 0 0 0.2rem rgba(96, 29, 87, 0.25);
     }
     
     .input-group:focus-within .input-group-text {
-        border-color: #FF9900;
+        border-color: #601d57;
         background-color: #fff;
     }
     
     .input-group:focus-within .form-control {
-        border-color: #FF9900;
+        border-color: #601d57;
     }
     
     .password-toggle {
@@ -72,11 +72,11 @@
     
     .password-toggle:hover {
         background-color: #e9ecef;
-        color: #FF9900;
+        color: #601d57;
     }
     
     .btn-login {
-        background: linear-gradient(135deg, #FF9900, #F08700);
+        background: linear-gradient(135deg, #601d57, #282560);
         border: none;
         padding: 12px;
         font-weight: 600;
@@ -85,8 +85,8 @@
     
     .btn-login:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(255, 153, 0, 0.4);
-        background: linear-gradient(135deg, #F08700, #FF9900);
+        box-shadow: 0 5px 15px rgba(96, 29, 87, 0.4);
+        background: linear-gradient(135deg, #282560, #601d57);
     }
 </style>
 
@@ -167,7 +167,7 @@ $(document).ready(function() {
                     icon: 'error',
                     title: 'Login Failed',
                     text: xhr.responseJSON?.message || 'Invalid email or password',
-                    confirmButtonColor: '#FF9900'
+                    confirmButtonColor: '#601d57'
                 });
                 submitBtn.prop('disabled', false).html(originalText);
             }

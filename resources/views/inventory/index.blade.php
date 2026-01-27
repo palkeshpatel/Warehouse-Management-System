@@ -237,7 +237,7 @@
                                 title: 'Success',
                                 text: response.message ||
                                     'Inventory added successfully',
-                                confirmButtonColor: '#FF9900'
+                                confirmButtonColor: '#601d57'
                             }).then(() => {
                                 $('#addModal').modal('hide');
                                 location.reload();
@@ -461,7 +461,7 @@
                             icon: 'warning',
                             title: 'Quantity Exceeded',
                             text: `Maximum available stock is ${maxQty.toLocaleString()} units`,
-                            confirmButtonColor: '#FF9900',
+                            confirmButtonColor: '#601d57',
                             timer: 3000,
                             timerProgressBar: true
                         });
@@ -483,7 +483,7 @@
                         icon: 'error',
                         title: 'Invalid Quantity',
                         text: 'Please enter a valid quantity',
-                        confirmButtonColor: '#FF9900'
+                        confirmButtonColor: '#601d57'
                     });
                     return;
                 }
@@ -493,7 +493,7 @@
                         icon: 'error',
                         title: 'Quantity Exceeded',
                         text: `You cannot deduct more than ${availableStock.toLocaleString()} units. Available stock: ${availableStock.toLocaleString()}`,
-                        confirmButtonColor: '#FF9900'
+                        confirmButtonColor: '#601d57'
                     });
                     return;
                 }
@@ -521,7 +521,7 @@
                                 title: 'Success',
                                 text: response.message ||
                                     'Inventory deducted successfully',
-                                confirmButtonColor: '#FF9900'
+                                confirmButtonColor: '#601d57'
                             }).then(() => {
                                 $('#deductModal').modal('hide');
                                 // Force reload to show updated stock values

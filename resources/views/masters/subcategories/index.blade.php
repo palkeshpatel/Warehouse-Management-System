@@ -118,7 +118,7 @@ function deleteSubcategory(id) {
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#FF9900',
+        confirmButtonColor: '#601d57',
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
@@ -135,7 +135,7 @@ function deleteSubcategory(id) {
                             icon: 'success',
                             title: 'Deleted!',
                             text: response.message,
-                            confirmButtonColor: '#FF9900'
+                            confirmButtonColor: '#601d57'
                         }).then(() => location.reload());
                     }
                 },
@@ -162,7 +162,7 @@ $('#subcategoryForm').on('submit', function(e) {
                     icon: 'success',
                     title: 'Success',
                     text: response.message,
-                    confirmButtonColor: '#FF9900'
+                    confirmButtonColor: '#601d57'
                 }).then(() => {
                     $('#subcategoryModal').modal('hide');
                     location.reload();

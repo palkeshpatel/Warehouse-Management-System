@@ -96,14 +96,14 @@ function handleAjaxError(xhr) {
             icon: 'error',
             title: 'Error',
             text: xhr.responseJSON.message,
-            confirmButtonColor: '#FF9900'
+            confirmButtonColor: '#601d57'
         });
     } else {
         Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'Something went wrong',
-            confirmButtonColor: '#FF9900'
+            confirmButtonColor: '#601d57'
         });
     }
 }
@@ -114,6 +114,6 @@ function showSuccess(message) {
         icon: 'success',
         title: 'Success',
         text: message,
-        confirmButtonColor: '#FF9900'
+        confirmButtonColor: '#601d57'
     });
 }

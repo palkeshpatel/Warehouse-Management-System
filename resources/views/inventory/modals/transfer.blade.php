@@ -190,7 +190,7 @@
                                 icon: 'success',
                                 title: 'Success',
                                 text: response.message || 'Stock transferred successfully',
-                                confirmButtonColor: '#FF9900'
+                                confirmButtonColor: '#601d57'
                             }).then(() => {
                                 $('#transferModal').modal('hide');
                                 location.reload();

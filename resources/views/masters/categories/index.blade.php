@@ -106,7 +106,7 @@
                 text: "You won't be able to revert this!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#FF9900',
+                confirmButtonColor: '#601d57',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
@@ -123,7 +123,7 @@
                                     icon: 'success',
                                     title: 'Deleted!',
                                     text: response.message,
-                                    confirmButtonColor: '#FF9900'
+                                    confirmButtonColor: '#601d57'
                                 }).then(() => location.reload());
                             }
                         },
@@ -150,7 +150,7 @@
                             icon: 'success',
                             title: 'Success',
                             text: response.message,
-                            confirmButtonColor: '#FF9900'
+                            confirmButtonColor: '#601d57'
                         }).then(() => {
                             $('#categoryModal').modal('hide');
                             location.reload();

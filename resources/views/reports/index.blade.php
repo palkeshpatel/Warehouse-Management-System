@@ -287,7 +287,7 @@
                             icon: 'warning',
                             title: 'Validation Error',
                             text: 'Please select both start date and end date',
-                            confirmButtonColor: '#FF9900'
+                            confirmButtonColor: '#601d57'
                         });
                         return;
                     }
@@ -297,7 +297,7 @@
                             icon: 'warning',
                             title: 'Validation Error',
                             text: 'Start date cannot be greater than end date',
-                            confirmButtonColor: '#FF9900'
+                            confirmButtonColor: '#601d57'
                         });
                         return;
                     }

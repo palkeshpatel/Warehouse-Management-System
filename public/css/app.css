@@ -1,10 +1,10 @@
 :root {
-    --primary-color: #FF9900;
-    --primary-dark: #F08700;
+    --primary-color: #601d57;
+    --primary-dark: #282560;
     --sidebar-width: 250px;
     --sidebar-width-collapsed: 70px;
     --header-height: 60px;
-    --sidebar-bg: #FF9900;
+    --sidebar-bg: #601d57;
     --sidebar-color: #ECF0F1;
     --bg-color: #f8f9fa;
     --text-color: #333333;
@@ -190,7 +190,7 @@ body {
     background-color: var(--card-bg);
     border-color: var(--primary-color);
     color: var(--text-color);
-    box-shadow: 0 0 0 0.2rem rgba(255, 153, 0, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(96, 29, 87, 0.25);
 }
 
 .table {
@@ -253,7 +253,7 @@ nav ul.pagination .page-link:hover:not(.disabled):not(:disabled) {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(255, 153, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(96, 29, 87, 0.3);
 }
 
 nav ul.pagination .page-item.active .page-link {
@@ -321,8 +321,13 @@ nav ul.pagination .page-item.disabled .page-link:hover {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Flatpickr Custom Styling */
@@ -347,7 +352,7 @@ nav ul.pagination .page-item.disabled .page-link:hover {
 }
 
 .flatpickr-day:hover {
-    background: rgba(255, 153, 0, 0.1);
+    background: rgba(96, 29, 87, 0.1);
 }
 
 .flatpickr-months .flatpickr-month {
@@ -379,12 +384,15 @@ nav ul.pagination .page-item.disabled .page-link:hover {
     .sidebar {
         transform: translateX(-100%);
     }
+
     .sidebar.show {
         transform: translateX(0);
     }
+
     .main-content {
         margin-left: 0;
     }
+
     .sidebar.collapsed {
         transform: translateX(-100%);
     }
