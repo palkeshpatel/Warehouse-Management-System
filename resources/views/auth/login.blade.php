@@ -29,9 +29,27 @@
         text-align: center;
     }
     
+    .login-logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .login-logo {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        background: white;
+        border-radius: 12px;
+        padding: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
     .login-card-header h3 {
         margin: 0;
         font-weight: 600;
+        font-size: 1.25rem;
     }
     
     .login-card-body {
@@ -93,7 +111,10 @@
 <div class="login-container">
     <div class="login-card">
         <div class="login-card-header">
-            <h3><i class="bi bi-building me-2"></i>Warehouse Management System</h3>
+            <div class="login-logo-container">
+                <img src="{{ asset('image/logo.png') }}" alt="Yuvaan Energy Limited" class="login-logo">
+                <h3>Warehouse Management System</h3>
+            </div>
         </div>
         <div class="login-card-body">
             <form id="loginForm">

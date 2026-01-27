@@ -1,6 +1,9 @@
 <aside class="sidebar">
     <div class="sidebar-header">
-        <h4 class="logo-text">Warehouse System</h4>
+        <div class="logo-container">
+            <img src="{{ asset('image/logo.png') }}" alt="Yuvaan Energy Limited" class="sidebar-logo">
+            <h4 class="logo-text">Warehouse System</h4>
+        </div>
     </div>
     <nav class="sidebar-nav">
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
@@ -41,5 +44,10 @@
             </a>
         @endif
     </nav>
+    <div class="sidebar-footer">
+        <div class="footer-content">
+            <p class="footer-text">© {{ date('Y') }} Yuvaan Energy Limited<br>Warehouse Management System</p>
+        </div>
+    </div>
 </aside>
 
