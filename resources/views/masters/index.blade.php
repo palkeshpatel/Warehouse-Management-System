@@ -79,7 +79,7 @@
                                                 onclick="deleteSubcategory({{ $subcategory->id }})" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-info"
+                                            <button class="btn btn-sm btn-primary"
                                                 onclick="openAddModelModal({{ $subcategory->id }}, {{ $category->id }})"
                                                 title="Add Model">
                                                 <i class="bi bi-plus-circle me-1"></i>ADD ITEM
@@ -89,7 +89,8 @@
                                 </div>
 
                                 <!-- Models Container -->
-                                <div class="models-container" id="subcategory-{{ $category->id }}-{{ $subcategory->id }}" style="display: none;">
+                                <div class="models-container" id="subcategory-{{ $category->id }}-{{ $subcategory->id }}"
+                                    style="display: none;">
                                     @if ($subcategory->models && $subcategory->models->count() > 0)
                                         <div class="model-header-text ps-5 py-2">
                                             <strong>Items in {{ $subcategory->name }}:</strong>
@@ -633,7 +634,7 @@
                                 subcategories.forEach(function(sub) {
                                     subcategorySelect.append(
                                         `<option value="${sub.id}">${sub.name}</option>`
-                                        );
+                                    );
                                 });
                                 subcategorySelect.prop('disabled', false);
                             } else {

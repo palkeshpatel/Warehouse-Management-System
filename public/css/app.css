@@ -458,16 +458,16 @@ nav ul.pagination .page-item.disabled .page-link:hover {
 
 /* Override Bootstrap info color with brand purple */
 .text-info {
-    color: #282560 !important;
+    color: #601d57 !important;
 }
 
 .bg-info {
-    background-color: #282560 !important;
+    background-color: #601d57 !important;
 }
 
 .btn-info {
-    background-color: #282560 !important;
-    border-color: #282560 !important;
+    background-color: #601d57 !important;
+    border-color: #601d57 !important;
 }
 
 .btn-info:hover {
@@ -476,7 +476,7 @@ nav ul.pagination .page-item.disabled .page-link:hover {
 }
 
 .badge.bg-info {
-    background-color: #282560 !important;
+    background-color: #601d57 !important;
 }
 
 @media (max-width: 768px) {
