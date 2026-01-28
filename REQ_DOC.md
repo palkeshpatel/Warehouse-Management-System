@@ -46,7 +46,7 @@ Models (presumably for both TopCon & Bifacial): 550, 560, 565, 570, 575, 580, 60
 Image 2 (image_195f1f.png) - Second Category & Invoice Attachment
 Second Category - Invertor
 
-Sub-Category - SIMA
+Sub-Category - sma
 
 3.0 / 3.6 / 4.0 / 5.0 / 6.0
 
@@ -301,7 +301,7 @@ timestamps
     4.5 Inventory Subcategories
     id
     category_id
-    name (Adani Solar, SIMA, Jio Spark)
+    name (Adani Solar, sma, Jio Spark)
     timestamps
 
     4.6 Models Table

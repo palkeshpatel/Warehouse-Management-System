@@ -46,9 +46,9 @@ This will create:
 - ✅ 2 Admin users (one per warehouse)
 - ✅ 2 Employee users (one per warehouse)
 - ✅ 2 Categories (Panels, Inverter)
-- ✅ 3 Subcategories (Adani Solar, SIMA, Jio Spark)
+- ✅ 3 Subcategories (Adani Solar, sma, Jio Spark)
 - ✅ Multiple Models (550, 560, 565, 570, 575, 580, 600, 610, 620 for Panels)
-- ✅ Inverter Models (3.0, 3.6, 4.0, 5.0, 6.0 for SIMA and 2.0 KW for Jio Spark)
+- ✅ Inverter Models (3.0, 3.6, 4.0, 5.0, 6.0 for sma and 2.0 KW for Jio Spark)
 
 ### Step 4: Create Storage Link (For File Uploads)
 

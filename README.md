@@ -66,7 +66,7 @@ This Warehouse Management System is designed to manage inventory across multiple
 ### 3. **Inventory Management**
 
 -   **Categories:** Organize products (e.g., Panels, Inverter)
--   **Subcategories:** Further classification (e.g., Adani Solar, SIMA, Jio Spark)
+-   **Subcategories:** Further classification (e.g., Adani Solar, sma, Jio Spark)
 -   **Models:** Specific product models (e.g., 550, 560, 3.0 KW, etc.)
 -   **Stock Management:** Add, deduct, and transfer inventory
 -   **Transaction Tracking:** Complete history of all inventory movements
@@ -362,7 +362,7 @@ Warehouse Management System/
 2. **users** - User accounts with role and warehouse assignment
 3. **warehouses** - Warehouse information
 4. **inventory_categories** - Product categories (Panels, Inverter)
-5. **inventory_subcategories** - Subcategories (Adani Solar, SIMA, Jio Spark)
+5. **inventory_subcategories** - Subcategories (Adani Solar, sma, Jio Spark)
 6. **models** - Product models (550, 560, 3.0 KW, etc.)
 7. **inventory_stock** - Current stock levels per warehouse
 8. **inventory_transactions** - Transaction history

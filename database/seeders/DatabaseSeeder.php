@@ -79,9 +79,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Create Subcategories for Inverter
-        $sima = InventorySubcategory::create([
+        $sma = InventorySubcategory::create([
             'category_id' => $inverterCategory->id,
-            'name' => 'SIMA'
+            'name' => 'sma'
         ]);
 
         $jioSpark = InventorySubcategory::create([
@@ -98,11 +98,11 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Create Models for SIMA (Inverter)
-        $simaModels = ['3.0', '3.6', '4.0', '5.0', '6.0'];
-        foreach ($simaModels as $modelName) {
+        // Create Models for sma (Inverter)
+        $smaModels = ['3.0', '3.6', '4.0', '5.0', '6.0'];
+        foreach ($smaModels as $modelName) {
             ProductModel::create([
-                'subcategory_id' => $sima->id,
+                'subcategory_id' => $sma->id,
                 'model_name' => $modelName
             ]);
         }
@@ -118,7 +118,7 @@ class DatabaseSeeder extends Seeder
 
         // Get models by subcategory
         $adaniModels = ProductModel::where('subcategory_id', $adaniSolar->id)->get();
-        $simaModels = ProductModel::where('subcategory_id', $sima->id)->get();
+        $smaModels = ProductModel::where('subcategory_id', $sma->id)->get();
         $jioSparkModel = ProductModel::where('subcategory_id', $jioSpark->id)->first();
 
         // Add inventory to each warehouse
@@ -136,8 +136,8 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            // Add some inverter models (first 3 SIMA models)
-            $inverterModelsToAdd = $simaModels->take(3);
+            // Add some inverter models (first 3 sma models)
+            $inverterModelsToAdd = $smaModels->take(3);
             foreach ($inverterModelsToAdd as $model) {
                 $qty = rand(20, 100);
                 \App\Models\InventoryStock::create([
