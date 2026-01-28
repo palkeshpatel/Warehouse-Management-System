@@ -39,6 +39,16 @@
                         </option>
                     </select>
                 </div>
+                <div class="col-md-2">
+                    <label class="form-label">Transaction Type</label>
+                    <select name="transaction_subtype" class="form-select" id="transactionSubtypeFilter">
+                        <option value="">All Types</option>
+                        <option value="purchase_stock">Purchase Stock</option>
+                        <option value="sales_return">Sales Return</option>
+                        <option value="sales">Sales</option>
+                        <option value="purchase_return">Purchase Return</option>
+                    </select>
+                </div>
                 <div class="col-md-2" id="startDateContainer" style="display: none;">
                     <label class="form-label">Start Date</label>
                     <input type="text" name="start_date" class="form-control" id="startDate"
@@ -99,6 +109,7 @@
                             <th>Model</th>
                             <th>Warehouse</th>
                             <th>Type</th>
+                            <th>Transaction Type</th>
                             <th>Quantity</th>
                             <th>User</th>
                             <th>Remarks</th>
@@ -116,13 +127,22 @@
                                         {{ ucfirst($transaction->type) }}
                                     </span>
                                 </td>
+                                <td>
+                                    @if ($transaction->transaction_subtype)
+                                        <span class="badge bg-secondary">
+                                            {{ str_replace('_', ' ', ucfirst($transaction->transaction_subtype)) }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td>{{ $transaction->qty }}</td>
                                 <td>{{ $transaction->creator->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->remarks ?? '-' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="8" class="text-center text-muted py-4">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No transactions found
                                 </td>

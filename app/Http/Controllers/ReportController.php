@@ -23,7 +23,7 @@ class ReportController extends Controller
             $dateRange = $this->getDateRange($period);
             $startDate = $dateRange[0]->format('Y-m-d');
             $endDate = $dateRange[1]->format('Y-m-d');
-            $data = $this->getReportData($warehouseId, $period, $user->isSuperAdmin(), $startDate, $endDate, 1);
+            $data = $this->getReportData($warehouseId, $period, $user->isSuperAdmin(), $startDate, $endDate, 1, null);
 
             return view('reports.index', compact('data', 'warehouses', 'period', 'warehouseId', 'startDate', 'endDate'));
         }
@@ -39,6 +39,7 @@ class ReportController extends Controller
         $period = $request->period ?? 'monthly';
         $startDate = $request->start_date;
         $endDate = $request->end_date;
+        $transactionSubtype = $request->transaction_subtype ?: null;
 
         // If period is custom, validate dates
         if ($period === 'custom' && (!$startDate || !$endDate)) {
@@ -48,7 +49,7 @@ class ReportController extends Controller
             ], 422);
         }
 
-        $data = $this->getReportData($warehouseId, $period, $user->isSuperAdmin(), $startDate, $endDate, $request->page ?? 1);
+        $data = $this->getReportData($warehouseId, $period, $user->isSuperAdmin(), $startDate, $endDate, $request->page ?? 1, $transactionSubtype);
 
         // Build pagination URLs with current filters
         $paginator = $data['transactions'];
@@ -69,7 +70,7 @@ class ReportController extends Controller
         ]);
     }
 
-    private function getReportData($warehouseId, $period, $isSuperAdmin, $startDate = null, $endDate = null, $page = 1)
+    private function getReportData($warehouseId, $period, $isSuperAdmin, $startDate = null, $endDate = null, $page = 1, $transactionSubtype = null)
     {
         $query = InventoryTransaction::with(['model', 'warehouse', 'creator']);
 
@@ -89,6 +90,11 @@ class ReportController extends Controller
         }
 
         $query->whereBetween('created_at', $dateRange);
+
+        // Filter by transaction subtype
+        if ($transactionSubtype) {
+            $query->where('transaction_subtype', $transactionSubtype);
+        }
 
         // Clone query for stats calculation
         $statsQuery = clone $query;
