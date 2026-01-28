@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
         // Create Subcategories for Inverter
         $sma = InventorySubcategory::create([
             'category_id' => $inverterCategory->id,
-            'name' => 'sma'
+            'name' => 'SMA'
         ]);
 
         $jioSpark = InventorySubcategory::create([
