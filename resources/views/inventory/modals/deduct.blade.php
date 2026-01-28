@@ -1,3 +1,27 @@
+<!-- First Modal: Transaction Type Selection -->
+<div class="modal fade" id="deductTypeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-dash-circle me-2"></i>Deduct Inventory - Select Type</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="mb-4">Please select the transaction type:</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <button type="button" class="btn btn-danger btn-lg px-5" id="btnSelectSales">
+                        <i class="bi bi-cart-dash me-2"></i>Sales
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-lg px-5" id="btnSelectPurchaseReturn">
+                        <i class="bi bi-arrow-return-right me-2"></i>Return (Purchase)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Modal: Actual Deduct Inventory Form -->
 <div class="modal fade" id="deductModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -7,6 +31,32 @@
             </div>
             <form id="deductInventoryForm" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <!-- Transaction Type Display -->
+                    <div class="alert alert-danger mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Transaction Type:</strong> <span id="displayDeductTransactionType"></span>
+                    </div>
+                    <input type="hidden" name="transaction_subtype" id="deductTransactionSubtype" required>
+
+                    <!-- Reason Section (for Purchase Return) -->
+                    <div class="row mb-3" id="purchaseReturnReasonSection" style="display: none;">
+                        <div class="col-12">
+                            <label class="form-label">Return Reason <span class="text-danger">*</span></label>
+                            <select name="purchase_return_reason_id" class="form-select" id="deductPurchaseReturnReason">
+                                <option value="">Select Reason</option>
+                                @foreach(\App\Models\PurchaseReturnReason::where('is_active', true)->get() as $reason)
+                                    <option value="{{ $reason->id }}" data-is-other="{{ strtolower($reason->name) === 'other' ? '1' : '0' }}">
+                                        {{ $reason->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 mt-2" id="deductPurchaseReturnOtherSection" style="display: none;">
+                            <label class="form-label">Specify Other Reason <span class="text-danger">*</span></label>
+                            <textarea name="reason_other" class="form-control" rows="2" placeholder="Please specify the reason"></textarea>
+                        </div>
+                    </div>
+
                     <div class="row g-3">
                         @if (auth()->user()->isSuperAdmin())
                             <div class="col-md-6">

@@ -6,8 +6,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Inventory Management</h2>
         <div class="d-flex gap-2">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">Add Inventory</button>
-            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deductModal">Deduct Inventory</button>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTypeModal">Add Inventory</button>
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deductTypeModal">Deduct Inventory</button>
             @if (auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferModal">Transfer Stock</button>
             @endif
@@ -97,9 +97,77 @@
         $(document).ready(function() {
             console.log('Document ready - setting up Add Inventory modal handlers');
 
+            // ========== ADD INVENTORY TYPE SELECTION MODAL ==========
+            $(document).on('click', '#btnSelectPurchaseStock', function() {
+                $('#addTransactionSubtype').val('purchase_stock');
+                $('#displayTransactionType').text('Purchase Stock');
+                $('#salesReturnReasonSection').hide();
+                $('#addSalesReturnReason').val('').prop('required', false);
+                $('#addSalesReturnOtherSection').hide();
+                $('#addSalesReturnOtherSection textarea').val('').prop('required', false);
+
+                $('#addTypeModal').one('hidden.bs.modal', function() {
+                    $('#addModal').modal('show');
+                });
+                $('#addTypeModal').modal('hide');
+            });
+
+            $(document).on('click', '#btnSelectSalesReturn', function() {
+                $('#addTransactionSubtype').val('sales_return');
+                $('#displayTransactionType').text('Return (Sales)');
+                $('#salesReturnReasonSection').show();
+                $('#addSalesReturnReason').prop('required', true);
+
+                $('#addTypeModal').one('hidden.bs.modal', function() {
+                    $('#addModal').modal('show');
+                });
+                $('#addTypeModal').modal('hide');
+            });
+
+            // ========== DEDUCT INVENTORY TYPE SELECTION MODAL ==========
+            $(document).on('click', '#btnSelectSales', function() {
+                $('#deductTransactionSubtype').val('sales');
+                $('#displayDeductTransactionType').text('Sales');
+                $('#purchaseReturnReasonSection').hide();
+                $('#deductPurchaseReturnReason').val('').prop('required', false);
+                $('#deductPurchaseReturnOtherSection').hide();
+                $('#deductPurchaseReturnOtherSection textarea').val('').prop('required', false);
+
+                $('#deductTypeModal').one('hidden.bs.modal', function() {
+                    $('#deductModal').modal('show');
+                });
+                $('#deductTypeModal').modal('hide');
+            });
+
+            $(document).on('click', '#btnSelectPurchaseReturn', function() {
+                $('#deductTransactionSubtype').val('purchase_return');
+                $('#displayDeductTransactionType').text('Return (Purchase)');
+                $('#purchaseReturnReasonSection').show();
+                $('#deductPurchaseReturnReason').prop('required', true);
+
+                $('#deductTypeModal').one('hidden.bs.modal', function() {
+                    $('#deductModal').modal('show');
+                });
+                $('#deductTypeModal').modal('hide');
+            });
+
             // Bind events when modal is shown (after it's fully displayed)
             $(document).on('shown.bs.modal', '#addModal', function() {
                 console.log('Modal is now shown');
+
+                // Sales Return Reason Change Handler
+                $('#addSalesReturnReason').off('change').on('change', function() {
+                    const selectedOption = $(this).find('option:selected');
+                    const isOther = selectedOption.data('is-other') == '1';
+                    
+                    if (isOther) {
+                        $('#addSalesReturnOtherSection').show();
+                        $('#addSalesReturnOtherSection textarea').prop('required', true);
+                    } else {
+                        $('#addSalesReturnOtherSection').hide();
+                        $('#addSalesReturnOtherSection textarea').val('').prop('required', false);
+                    }
+                });
 
                 // Category change handler
                 $('#addCategory').off('change').on('change', function() {
@@ -260,12 +328,30 @@
                 $('#addSubcategory').html('<option value="">Select Subcategory</option>').prop('disabled',
                     true);
                 $('#addModel').html('<option value="">Select Model</option>').prop('disabled', true);
+                $('#addTransactionSubtype').val('');
+                $('#displayTransactionType').text('');
+                $('#salesReturnReasonSection').hide();
+                $('#addSalesReturnOtherSection').hide();
             });
 
             // ========== DEDUCT INVENTORY MODAL ==========
             // Bind events when modal is shown (after it's fully displayed)
             $(document).on('shown.bs.modal', '#deductModal', function() {
                 console.log('Deduct Modal is now shown');
+
+                // Purchase Return Reason Change Handler
+                $('#deductPurchaseReturnReason').off('change').on('change', function() {
+                    const selectedOption = $(this).find('option:selected');
+                    const isOther = selectedOption.data('is-other') == '1';
+                    
+                    if (isOther) {
+                        $('#deductPurchaseReturnOtherSection').show();
+                        $('#deductPurchaseReturnOtherSection textarea').prop('required', true);
+                    } else {
+                        $('#deductPurchaseReturnOtherSection').hide();
+                        $('#deductPurchaseReturnOtherSection textarea').val('').prop('required', false);
+                    }
+                });
 
                 // Category change handler
                 $(document).off('change', '#deductCategory').on('change', '#deductCategory', function() {
@@ -539,6 +625,7 @@
             });
 
             // Reset deduct form when modal is closed
+            // Reset deduct form when modal is closed
             $(document).on('hidden.bs.modal', '#deductModal', function() {
                 $('#deductInventoryForm')[0].reset();
                 $('#deductCategory').val('');
@@ -549,6 +636,10 @@
                 $('#deductQty').val('').attr('max', 0).prop('disabled', true);
                 $('#deductQtyHelp').text('Please select a model first').removeClass(
                     'text-danger text-success');
+                $('#deductTransactionSubtype').val('');
+                $('#displayDeductTransactionType').text('');
+                $('#purchaseReturnReasonSection').hide();
+                $('#deductPurchaseReturnOtherSection').hide();
                 @if (auth()->user()->isSuperAdmin())
                     $('#deductWarehouse').val('');
                 @endif

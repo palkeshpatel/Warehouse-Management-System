@@ -14,6 +14,10 @@ class InventoryTransaction extends Model
         'warehouse_id',
         'qty',
         'type',
+        'transaction_subtype',
+        'sales_return_reason_id',
+        'purchase_return_reason_id',
+        'reason_other',
         'invoice_path',
         'created_by',
         'remarks',
@@ -44,5 +48,15 @@ class InventoryTransaction extends Model
     public function transferTo(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class, 'transfer_to_warehouse_id');
+    }
+
+    public function salesReturnReason(): BelongsTo
+    {
+        return $this->belongsTo(SalesReturnReason::class);
+    }
+
+    public function purchaseReturnReason(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseReturnReason::class);
     }
 }

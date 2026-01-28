@@ -1,3 +1,27 @@
+<!-- First Modal: Transaction Type Selection -->
+<div class="modal fade" id="addTypeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Inventory - Select Type</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="mb-4">Please select the transaction type:</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <button type="button" class="btn btn-primary btn-lg px-5" id="btnSelectPurchaseStock">
+                        <i class="bi bi-cart-plus me-2"></i>Purchase Stock
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-lg px-5" id="btnSelectSalesReturn">
+                        <i class="bi bi-arrow-return-left me-2"></i>Return (Sales)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Modal: Actual Add Inventory Form -->
 <div class="modal fade" id="addModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -7,6 +31,32 @@
             </div>
             <form id="addInventoryForm" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <!-- Transaction Type Display -->
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Transaction Type:</strong> <span id="displayTransactionType"></span>
+                    </div>
+                    <input type="hidden" name="transaction_subtype" id="addTransactionSubtype" required>
+
+                    <!-- Reason Section (for Sales Return) -->
+                    <div class="row mb-3" id="salesReturnReasonSection" style="display: none;">
+                        <div class="col-12">
+                            <label class="form-label">Return Reason <span class="text-danger">*</span></label>
+                            <select name="sales_return_reason_id" class="form-select" id="addSalesReturnReason">
+                                <option value="">Select Reason</option>
+                                @foreach(\App\Models\SalesReturnReason::where('is_active', true)->get() as $reason)
+                                    <option value="{{ $reason->id }}" data-is-other="{{ strtolower($reason->name) === 'other' ? '1' : '0' }}">
+                                        {{ $reason->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 mt-2" id="addSalesReturnOtherSection" style="display: none;">
+                            <label class="form-label">Specify Other Reason <span class="text-danger">*</span></label>
+                            <textarea name="reason_other" class="form-control" rows="2" placeholder="Please specify the reason"></textarea>
+                        </div>
+                    </div>
+
                     <div class="row g-3">
                         @if (auth()->user()->isSuperAdmin())
                             <div class="col-md-6">

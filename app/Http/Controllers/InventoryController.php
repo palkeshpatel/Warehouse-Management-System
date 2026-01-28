@@ -204,9 +204,23 @@ class InventoryController extends Controller
             'model_id' => 'required|exists:models,id',
             'warehouse_id' => $user->isSuperAdmin() ? 'required|exists:warehouses,id' : 'nullable',
             'qty' => 'required|integer|min:1',
+            'transaction_subtype' => 'required|in:purchase_stock,sales_return',
+            'sales_return_reason_id' => 'required_if:transaction_subtype,sales_return|exists:sales_return_reasons,id',
+            'reason_other' => 'nullable|string',
             'invoice' => 'nullable|file|mimes:jpg,jpeg,pdf|max:51200',
             'remarks' => 'nullable|string',
         ]);
+
+        // Validate reason_other if "Other" reason is selected
+        if ($data['transaction_subtype'] === 'sales_return' && isset($data['sales_return_reason_id'])) {
+            $reason = \App\Models\SalesReturnReason::find($data['sales_return_reason_id']);
+            if ($reason && strtolower($reason->name) === 'other' && empty($data['reason_other'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please specify the reason for "Other" option'
+                ], 422);
+            }
+        }
 
         if (!$user->isSuperAdmin()) {
             $data['warehouse_id'] = $user->warehouse_id;
@@ -230,6 +244,9 @@ class InventoryController extends Controller
             'warehouse_id' => $data['warehouse_id'],
             'qty' => $data['qty'],
             'type' => 'add',
+            'transaction_subtype' => $data['transaction_subtype'],
+            'sales_return_reason_id' => $data['transaction_subtype'] === 'sales_return' ? ($data['sales_return_reason_id'] ?? null) : null,
+            'reason_other' => $data['reason_other'] ?? null,
             'invoice_path' => $invoicePath,
             'created_by' => $user->id,
             'remarks' => $data['remarks'] ?? null,
@@ -249,9 +266,23 @@ class InventoryController extends Controller
             'model_id' => 'required|exists:models,id',
             'warehouse_id' => $user->isSuperAdmin() ? 'required|exists:warehouses,id' : 'nullable',
             'qty' => 'required|integer|min:1',
+            'transaction_subtype' => 'required|in:sales,purchase_return',
+            'purchase_return_reason_id' => 'required_if:transaction_subtype,purchase_return|exists:purchase_return_reasons,id',
+            'reason_other' => 'nullable|string',
             'invoice' => 'required|file|mimes:jpg,jpeg,pdf|max:51200',
             'remarks' => 'nullable|string',
         ]);
+
+        // Validate reason_other if "Other" reason is selected
+        if ($data['transaction_subtype'] === 'purchase_return' && isset($data['purchase_return_reason_id'])) {
+            $reason = \App\Models\PurchaseReturnReason::find($data['purchase_return_reason_id']);
+            if ($reason && strtolower($reason->name) === 'other' && empty($data['reason_other'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please specify the reason for "Other" option'
+                ], 422);
+            }
+        }
 
         if (!$user->isSuperAdmin()) {
             $data['warehouse_id'] = $user->warehouse_id;
@@ -284,6 +315,9 @@ class InventoryController extends Controller
             'warehouse_id' => $data['warehouse_id'],
             'qty' => $data['qty'],
             'type' => 'deduct',
+            'transaction_subtype' => $data['transaction_subtype'],
+            'purchase_return_reason_id' => $data['transaction_subtype'] === 'purchase_return' ? ($data['purchase_return_reason_id'] ?? null) : null,
+            'reason_other' => $data['reason_other'] ?? null,
             'invoice_path' => $invoicePath,
             'created_by' => $user->id,
             'remarks' => $data['remarks'] ?? null,

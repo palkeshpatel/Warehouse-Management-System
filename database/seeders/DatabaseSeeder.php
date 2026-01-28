@@ -17,6 +17,10 @@ class DatabaseSeeder extends Seeder
         // Seed Roles
         $this->call(RoleSeeder::class);
 
+        // Seed Return Reasons
+        $this->call(SalesReturnReasonSeeder::class);
+        $this->call(PurchaseReturnReasonSeeder::class);
+
         // Create Master Admin (Super Admin)
         User::create([
             'name' => 'Master Admin',

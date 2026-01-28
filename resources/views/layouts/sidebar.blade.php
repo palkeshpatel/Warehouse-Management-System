@@ -2,7 +2,7 @@
     <div class="sidebar-header">
         <div class="logo-container">
             <img src="{{ asset('image/logo.png') }}" alt="Yuvaan Energy Limited" class="sidebar-logo">
-            <h4 class="logo-text">Warehouse System</h4>
+        <h4 class="logo-text">Warehouse System</h4>
         </div>
     </div>
     <nav class="sidebar-nav">
