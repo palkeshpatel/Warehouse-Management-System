@@ -94,10 +94,27 @@
                             <label class="form-label">Quantity <span class="text-danger">*</span></label>
                             <input type="number" name="qty" class="form-control" min="1" required>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Invoice (Optional)</label>
-                            <input type="file" name="invoice" class="form-control" accept=".jpg,.jpeg,.pdf">
-                            <small class="text-muted">Max size: 50MB (JPG, JPEG, PDF)</small>
+                        <div class="col-12">
+                            <div class="card bg-light border">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3 text-primary"><i class="bi bi-receipt me-2"></i>Invoice Details (Optional)</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Invoice No</label>
+                                            <input type="text" name="invoice_no" class="form-control" placeholder="Enter Invoice No">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Invoice Date</label>
+                                            <input type="date" name="invoice_date" class="form-control">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Invoice File</label>
+                                            <input type="file" name="invoice" class="form-control" accept=".jpg,.jpeg,.pdf">
+                                            <small class="text-muted d-block mt-1">Max: 50MB</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Remarks</label>

@@ -67,4 +67,5 @@ Route::middleware(['auth'])->group(function () {
     // Reports accessible to all authenticated users (Super Admin, Admin, Employee)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/filter', [ReportController::class, 'filterReports'])->name('reports.filter');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 });

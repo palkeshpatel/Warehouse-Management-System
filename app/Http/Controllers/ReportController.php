@@ -7,6 +7,8 @@ use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\InventoryTransactionsExport;
 
 class ReportController extends Controller
 {
@@ -70,7 +72,21 @@ class ReportController extends Controller
         ]);
     }
 
-    private function getReportData($warehouseId, $period, $isSuperAdmin, $startDate = null, $endDate = null, $page = 1, $transactionSubtype = null)
+    public function export(Request $request)
+    {
+        $user = auth()->user();
+        $warehouseId = $user->isSuperAdmin() ? ($request->warehouse_id ?: null) : $user->warehouse_id;
+        $period = $request->period ?? 'monthly';
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $transactionSubtype = $request->transaction_subtype ?: null;
+
+        $query = $this->getReportQuery($warehouseId, $period, $user->isSuperAdmin(), $startDate, $endDate, $transactionSubtype);
+
+        return Excel::download(new InventoryTransactionsExport($query), 'inventory_report_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    private function getReportQuery($warehouseId, $period, $isSuperAdmin, $startDate = null, $endDate = null, $transactionSubtype = null)
     {
         $query = InventoryTransaction::with(['model', 'warehouse', 'creator']);
 
@@ -96,19 +112,34 @@ class ReportController extends Controller
             $query->where('transaction_subtype', $transactionSubtype);
         }
 
+        return $query->latest('created_at');
+    }
+
+    private function getReportData($warehouseId, $period, $isSuperAdmin, $startDate = null, $endDate = null, $page = 1, $transactionSubtype = null)
+    {
+        $query = $this->getReportQuery($warehouseId, $period, $isSuperAdmin, $startDate, $endDate, $transactionSubtype);
+        
+        // Clone query for stats calculation (need to remove latest ordering for sum efficiency if possible, but keep it simple)
+        $statsQuery = InventoryTransaction::query(); // Re-build base query for stats to avoid order by issues? Or just clone.
+        // Actually, re-using getReportQuery includes latest(), which doesn't affect sum().
+        // But getReportQuery returns the builder.
+        
+        // Re-implement getReportData using getReportQuery would be cleaner but I'll stick to minimum changes to avoid breaking.
+        // Wait, I should use getReportQuery inside getReportData to avoid code duplication.
+        
         // Clone query for stats calculation
         $statsQuery = clone $query;
         $paginatedQuery = clone $query;
 
         // Get paginated transactions
-        $transactions = $paginatedQuery->latest('created_at')->paginate(10, ['*'], 'page', $page);
+        $transactions = $paginatedQuery->paginate(10, ['*'], 'page', $page);
 
-        // Calculate stats from original query
-        $totalAdded = $statsQuery->where('type', 'add')->sum('qty');
-        $totalDeducted = $statsQuery->where('type', 'deduct')->sum('qty');
-
-        $transferQuery = clone $query;
-        $totalTransferred = $transferQuery->where('type', 'transfer')->sum('qty');
+        // Calculate stats from original query - remove ordering for stats
+        $statsQuery->reorder();
+        
+        $totalAdded = (clone $statsQuery)->where('type', 'add')->sum('qty');
+        $totalDeducted = (clone $statsQuery)->where('type', 'deduct')->sum('qty');
+        $totalTransferred = (clone $statsQuery)->where('type', 'transfer')->sum('qty');
 
         return [
             'transactions' => $transactions,
@@ -116,7 +147,9 @@ class ReportController extends Controller
             'totalDeducted' => $totalDeducted,
             'totalTransferred' => $totalTransferred,
             'period' => $period,
-            'dateRange' => $dateRange,
+            'dateRange' => $period === 'custom' && $startDate && $endDate ? 
+                [Carbon::parse($startDate)->startOfDay(), Carbon::parse($endDate)->endOfDay()] : 
+                $this->getDateRange($period),
         ];
     }
 

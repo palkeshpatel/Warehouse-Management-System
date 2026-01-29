@@ -208,6 +208,8 @@ class InventoryController extends Controller
             'sales_return_reason_id' => 'nullable|required_if:transaction_subtype,sales_return|exists:sales_return_reasons,id',
             'reason_other' => 'nullable|string',
             'invoice' => 'nullable|file|mimes:jpg,jpeg,pdf|max:51200',
+            'invoice_no' => 'nullable|string|max:255',
+            'invoice_date' => 'nullable|date',
             'remarks' => 'nullable|string',
         ]);
 
@@ -248,6 +250,8 @@ class InventoryController extends Controller
             'sales_return_reason_id' => $data['transaction_subtype'] === 'sales_return' ? ($data['sales_return_reason_id'] ?? null) : null,
             'reason_other' => $data['reason_other'] ?? null,
             'invoice_path' => $invoicePath,
+            'invoice_no' => $data['invoice_no'] ?? null,
+            'invoice_date' => $data['invoice_date'] ?? null,
             'created_by' => $user->id,
             'remarks' => $data['remarks'] ?? null,
         ]);
@@ -269,7 +273,9 @@ class InventoryController extends Controller
             'transaction_subtype' => 'required|in:sales,purchase_return',
             'purchase_return_reason_id' => 'nullable|required_if:transaction_subtype,purchase_return|exists:purchase_return_reasons,id',
             'reason_other' => 'nullable|string',
-            'invoice' => 'required|file|mimes:jpg,jpeg,pdf|max:51200',
+            'invoice' => 'nullable|file|mimes:jpg,jpeg,pdf|max:51200',
+            'invoice_no' => 'nullable|string|max:255',
+            'invoice_date' => 'nullable|date',
             'remarks' => 'nullable|string',
         ]);
 
@@ -319,6 +325,8 @@ class InventoryController extends Controller
             'purchase_return_reason_id' => $data['transaction_subtype'] === 'purchase_return' ? ($data['purchase_return_reason_id'] ?? null) : null,
             'reason_other' => $data['reason_other'] ?? null,
             'invoice_path' => $invoicePath,
+            'invoice_no' => $data['invoice_no'] ?? null,
+            'invoice_date' => $data['invoice_date'] ?? null,
             'created_by' => $user->id,
             'remarks' => $data['remarks'] ?? null,
         ]);

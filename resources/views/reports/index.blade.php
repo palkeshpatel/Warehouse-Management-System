@@ -60,9 +60,12 @@
                     <input type="text" name="end_date" class="form-control" id="endDate"
                         value="{{ $endDate ?? date('Y-m-d') }}" placeholder="Select End Date" readonly>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-funnel me-2"></i>Filter
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1" title="Filter">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                    <button type="button" id="downloadExcelBtn" class="btn btn-success flex-grow-1" title="Download Excel">
+                        <i class="bi bi-file-earmark-excel"></i>
                     </button>
                 </div>
             </form>
@@ -102,7 +105,7 @@
         </div>
         <div class="card-body" id="transactionsContainer">
             <div id="transactionsTable">
-                <table class="table table-striped">
+                <table class="table table-striped dt-responsive nowrap" style="width:100%" id="reportsTable">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -112,6 +115,9 @@
                             <th>Transaction Type</th>
                             <th>Quantity</th>
                             <th>User</th>
+                            <th>Invoice No</th>
+                            <th>Invoice Date</th>
+                            <th>Invoice File</th>
                             <th>Remarks</th>
                         </tr>
                     </thead>
@@ -129,15 +135,28 @@
                                 </td>
                                 <td>
                                     @if ($transaction->transaction_subtype)
-                                        <span class="badge bg-secondary">
-                                            {{ str_replace('_', ' ', ucfirst($transaction->transaction_subtype)) }}
-                                        </span>
+                                        @php
+                                            $subtype = str_replace('_', ' ', $transaction->transaction_subtype);
+                                            $subtype = ucwords($subtype);
+                                        @endphp
+                                        <span class="badge bg-secondary">{{ $subtype }}</span>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td>{{ $transaction->qty }}</td>
                                 <td>{{ $transaction->creator->name ?? 'N/A' }}</td>
+                                <td>{{ $transaction->invoice_no ?? '-' }}</td>
+                                <td>{{ $transaction->invoice_date ? \Carbon\Carbon::parse($transaction->invoice_date)->format('d/m/Y') : '-' }}</td>
+                                <td>
+                                    @if($transaction->invoice_path)
+                                        <a href="{{ asset('storage/' . $transaction->invoice_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-file-earmark-text"></i> View
+                                        </a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>{{ $transaction->remarks ?? '-' }}</td>
                             </tr>
                         @empty
@@ -169,10 +188,44 @@
     </div>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+@endpush
+
 @push('scripts')
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
             let startDatePicker, endDatePicker;
+            let reportsTable;
+
+            function initDataTable() {
+                if ($.fn.DataTable.isDataTable('#reportsTable')) {
+                    $('#reportsTable').DataTable().destroy();
+                }
+                
+                reportsTable = $('#reportsTable').DataTable({
+                    responsive: true,
+                    autoWidth: false,
+                    paging: false, // Using Laravel pagination
+                    searching: false, // Using custom filters
+                    info: false, // Using custom info
+                    ordering: false, // Preserving backend order
+                    columnDefs: [
+                        { responsivePriority: 1, targets: 0 }, // Date
+                        { responsivePriority: 2, targets: 3 }, // Type
+                        { responsivePriority: 3, targets: 5 }, // Quantity
+                        { responsivePriority: 4, targets: -1 } // Remarks
+                    ]
+                });
+            }
+
+            // Initialize on load
+            initDataTable();
 
             // Initialize Flatpickr Date Pickers
             function initDatePickers() {
@@ -295,6 +348,12 @@
                 loadReports(1);
             });
 
+            // Export Excel
+            $('#downloadExcelBtn').on('click', function() {
+                const formData = $('#reportFilterForm').serialize();
+                window.location.href = "{{ route('reports.export') }}?" + formData;
+            });
+
             function loadReports(page = 1) {
                 const period = $('#periodFilter').val();
                 const startDate = $('#startDate').val();
@@ -338,6 +397,9 @@
 
                             // Update table with pagination
                             $('#transactionsContainer').html(response.html);
+                            
+                            // Reinitialize DataTable
+                            initDataTable();
                         }
                     },
                     error: function(xhr) {

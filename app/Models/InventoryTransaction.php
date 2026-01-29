@@ -19,6 +19,8 @@ class InventoryTransaction extends Model
         'purchase_return_reason_id',
         'reason_other',
         'invoice_path',
+        'invoice_no',
+        'invoice_date',
         'created_by',
         'remarks',
         'transfer_from_warehouse_id',
