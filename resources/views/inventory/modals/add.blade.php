@@ -12,7 +12,7 @@
                     <button type="button" class="btn btn-primary btn-lg px-5" id="btnSelectPurchaseStock">
                         <i class="bi bi-cart-plus me-2"></i>Purchase Stock
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-lg px-5" id="btnSelectSalesReturn">
+                    <button type="button" class="btn btn-primary btn-lg px-5" id="btnSelectSalesReturn">
                         <i class="bi bi-arrow-return-left me-2"></i>Return (Sales)
                     </button>
                 </div>
