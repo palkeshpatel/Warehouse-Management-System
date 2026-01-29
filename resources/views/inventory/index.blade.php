@@ -101,6 +101,9 @@
             $(document).on('click', '#btnSelectPurchaseStock', function() {
                 $('#addTransactionSubtype').val('purchase_stock');
                 $('#displayTransactionType').text('Purchase Stock');
+                // Update modal header
+                $('#addModal .modal-title').html('<i class="bi bi-plus-circle me-2"></i>Add Inventory - Purchase Stock');
+                
                 $('#salesReturnReasonSection').hide();
                 $('#addSalesReturnReason').val('').prop('required', false);
                 $('#addSalesReturnOtherSection').hide();
@@ -115,6 +118,9 @@
             $(document).on('click', '#btnSelectSalesReturn', function() {
                 $('#addTransactionSubtype').val('sales_return');
                 $('#displayTransactionType').text('Return (Sales)');
+                // Update modal header
+                $('#addModal .modal-title').html('<i class="bi bi-plus-circle me-2"></i>Add Inventory - Return (Sales)');
+
                 $('#salesReturnReasonSection').show();
                 $('#addSalesReturnReason').prop('required', true);
 
@@ -128,6 +134,9 @@
             $(document).on('click', '#btnSelectSales', function() {
                 $('#deductTransactionSubtype').val('sales');
                 $('#displayDeductTransactionType').text('Sales');
+                // Update modal header
+                $('#deductModal .modal-title').html('<i class="bi bi-dash-circle me-2"></i>Deduct Inventory - Sales');
+
                 $('#purchaseReturnReasonSection').hide();
                 $('#deductPurchaseReturnReason').val('').prop('required', false);
                 $('#deductPurchaseReturnOtherSection').hide();
@@ -142,6 +151,9 @@
             $(document).on('click', '#btnSelectPurchaseReturn', function() {
                 $('#deductTransactionSubtype').val('purchase_return');
                 $('#displayDeductTransactionType').text('Return (Purchase)');
+                // Update modal header
+                $('#deductModal .modal-title').html('<i class="bi bi-dash-circle me-2"></i>Deduct Inventory - Return (Purchase)');
+
                 $('#purchaseReturnReasonSection').show();
                 $('#deductPurchaseReturnReason').prop('required', true);
 
