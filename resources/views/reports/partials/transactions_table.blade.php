@@ -12,6 +12,7 @@
             <th>Invoice Date</th>
             <th>Invoice File</th>
             <th>Remarks</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -50,6 +51,15 @@
                 @endif
             </td>
             <td>{{ $transaction->remarks ?? '-' }}</td>
+            <td>
+                @if(auth()->user()->isSuperAdmin() || (auth()->user()->isAdmin() && $transaction->warehouse_id == auth()->user()->warehouse_id))
+                    <button class="btn btn-sm btn-warning btn-edit-transaction" data-id="{{ $transaction->id }}">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                @else
+                    <span class="text-muted">-</span>
+                @endif
+            </td>
         </tr>
         @empty
         @endforelse

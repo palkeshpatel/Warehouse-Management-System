@@ -58,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/subcategories/{categoryId}', [InventoryController::class, 'getSubcategories']);
     Route::get('/inventory/models/{subcategoryId}', [InventoryController::class, 'getModels']);
     Route::get('/inventory/available-stock', [InventoryController::class, 'getAvailableStock'])->name('inventory.available-stock');
+    Route::get('/inventory/transactions/{id}/edit', [InventoryController::class, 'editTransaction'])->name('inventory.transactions.edit');
+    Route::post('/inventory/transactions/{id}/update', [InventoryController::class, 'updateTransaction'])->name('inventory.transactions.update');
 
     // Stock Transfer: Super Admin and Admin can transfer
     Route::middleware([IsAdminOrSuperAdmin::class])->group(function () {

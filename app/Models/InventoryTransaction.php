@@ -42,6 +42,11 @@ class InventoryTransaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function logs()
+    {
+        return $this->hasMany(InventoryLog::class, 'inventory_transaction_id');
+    }
+
     public function transferFrom(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class, 'transfer_from_warehouse_id');
